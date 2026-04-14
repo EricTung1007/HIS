@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { ArrowLeft, User, Calendar, Phone, AlertTriangle, Edit2 } from 'lucide-react';
 import api from '../api/client';
 import { Patient } from '../types';
+import AIAssistant from '../components/AIAssistant';
 import MedicalHistoryTab from './tabs/MedicalHistory';
 import MedicationsTab from './tabs/Medications';
 import MARTab from './tabs/MAR';
@@ -146,6 +147,13 @@ export default function PatientDetail() {
           {activeTab === 'notes' && <NursingNotesTab patientId={id!} />}
         </div>
       </div>
+
+      {/* AI Assistant floating button */}
+      <AIAssistant
+        patientId={id!}
+        patientName={patient.name}
+        onActionExecuted={() => {/* tabs will reload on next focus */}}
+      />
 
       {showEdit && patient && (
         <EditPatientModal

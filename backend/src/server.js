@@ -16,6 +16,8 @@ app.use('/api/patients/:pid/io', require('./routes/intake-output'));
 app.use('/api/patients/:pid/vitals', require('./routes/vital-signs'));
 app.use('/api/patients/:pid/pe', require('./routes/physical-exam'));
 app.use('/api/patients/:pid/notes', require('./routes/nursing-notes'));
+app.use('/api/patients/:pid/ai', require('./routes/ai'));
+app.use('/api/ai', require('./routes/ai'));
 
 app.get('/api/health', (req, res) => res.json({ status: 'ok', system: '台灣長照HIS系統' }));
 

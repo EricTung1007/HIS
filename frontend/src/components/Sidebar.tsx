@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Users, ChevronRight } from 'lucide-react';
+import { LayoutDashboard, Users, Settings } from 'lucide-react';
 
 const navItems = [
   { to: '/dashboard', icon: LayoutDashboard, label: '儀表板' },
@@ -34,6 +34,19 @@ export default function Sidebar() {
           </NavLink>
         ))}
       </nav>
+      <div className="px-2 pb-4">
+        <NavLink
+          to="/settings"
+          className={({ isActive }) =>
+            `flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors ${
+              isActive ? 'bg-blue-700 text-white' : 'text-blue-300 hover:bg-blue-800 hover:text-white'
+            }`
+          }
+        >
+          <Settings size={16} />
+          <span>AI 設定</span>
+        </NavLink>
+      </div>
       <div className="px-4 py-3 border-t border-blue-800">
         <div className="text-xs text-blue-400">台灣長照照護機構</div>
       </div>
