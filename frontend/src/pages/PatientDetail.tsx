@@ -62,71 +62,75 @@ export default function PatientDetail() {
 
       {/* Patient Header */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
-        <div className="flex items-start gap-5">
-          <div className={`w-16 h-16 rounded-full flex items-center justify-center text-white text-2xl font-bold shrink-0 ${patient.gender === 'F' ? 'bg-pink-400' : 'bg-blue-500'}`}>
-            {patient.name[0]}
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-3 flex-wrap">
-              <h2 className="text-xl font-bold text-gray-900">{patient.name}</h2>
-              <span className="text-sm text-gray-500">({patient.patient_no})</span>
-              <span className="badge-active">{patient.care_level}</span>
-              <span className={`text-xs px-2 py-0.5 rounded font-medium ${patient.gender === 'F' ? 'bg-pink-100 text-pink-700' : 'bg-blue-100 text-blue-700'}`}>
-                {patient.gender === 'F' ? '女' : '男'}
-              </span>
-              {/* Action buttons */}
-              <div className="ml-auto flex items-center gap-2 flex-wrap">
-                {/* ★ AI 語音助理 — the main entry point ★ */}
-                <button
-                  onClick={() => setAiOpen(true)}
-                  className="flex items-center gap-1.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg px-3 py-1.5 shadow-sm transition-colors"
-                >
-                  <Mic size={15} />
-                  <span>AI 語音助理</span>
-                </button>
-                <button
-                  onClick={() => setShowEdit(true)}
-                  className="flex items-center gap-1 text-xs text-gray-500 hover:text-blue-600 border border-gray-200 hover:border-blue-300 rounded-md px-2 py-1 transition-colors"
-                >
-                  <Edit2 size={12} /> 編輯住民資料
-                </button>
+        {/* Top row: avatar + name/badges + action buttons */}
+        <div className="flex items-center justify-between gap-3 mb-3">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className={`w-12 h-12 rounded-full flex items-center justify-center text-white text-xl font-bold shrink-0 ${patient.gender === 'F' ? 'bg-pink-400' : 'bg-blue-500'}`}>
+              {patient.name[0]}
+            </div>
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h2 className="text-xl font-bold text-gray-900">{patient.name}</h2>
+                <span className="text-sm text-gray-500">({patient.patient_no})</span>
+                <span className="badge-active">{patient.care_level}</span>
+                <span className={`text-xs px-2 py-0.5 rounded font-medium ${patient.gender === 'F' ? 'bg-pink-100 text-pink-700' : 'bg-blue-100 text-blue-700'}`}>
+                  {patient.gender === 'F' ? '女' : '男'}
+                </span>
               </div>
             </div>
-            <div className="mt-2 flex flex-wrap gap-x-6 gap-y-1 text-sm text-gray-600">
-              <span className="flex items-center gap-1"><Calendar size={13} className="text-gray-400" />{patient.birth_date} ({calcAge(patient.birth_date)}歲)</span>
-              <span className="flex items-center gap-1"><User size={13} className="text-gray-400" />血型：{patient.blood_type || '不詳'}</span>
-              {patient.room_no && <span>房號：{patient.room_no} / 床號：{patient.bed_no}</span>}
-              {patient.nhi_no && <span>健保號：{patient.nhi_no}</span>}
-              <span>入住：{patient.admission_date}</span>
-            </div>
-            {(patient.emergency_contact_name || patient.emergency_contact_phone) && (
-              <div className="mt-1 text-sm text-gray-500 flex items-center gap-1">
-                <Phone size={13} className="text-gray-400" />
-                緊急聯絡：{patient.emergency_contact_name}（{patient.emergency_contact_relation}）{patient.emergency_contact_phone}
-              </div>
-            )}
-            {/* Warning / Notes */}
-            <div className="mt-2 flex items-start gap-2">
-              {patient.notes ? (
-                <div className="flex-1 flex items-start gap-1 text-sm text-orange-600 bg-orange-50 border border-orange-200 rounded-md px-3 py-1.5">
-                  <AlertTriangle size={13} className="mt-0.5 shrink-0" />
-                  <span>{patient.notes}</span>
-                </div>
-              ) : (
-                <div className="flex-1 flex items-center gap-1 text-xs text-gray-300 bg-gray-50 border border-dashed border-gray-200 rounded-md px-3 py-1.5">
-                  <AlertTriangle size={12} className="shrink-0" />
-                  <span>無注意事項警告</span>
-                </div>
-              )}
-              <button
-                onClick={() => setShowEdit(true)}
-                title="編輯警告"
-                className="shrink-0 flex items-center gap-1 text-xs text-orange-500 hover:text-orange-700 border border-orange-200 hover:border-orange-400 bg-orange-50 hover:bg-orange-100 rounded-md px-2 py-1.5 transition-colors"
-              >
-                <Edit2 size={12} /> 編輯警告
-              </button>
-            </div>
           </div>
+          {/* Action buttons — shrink-0 so they never collapse */}
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              onClick={() => setAiOpen(true)}
+              className="flex items-center gap-1.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg px-3 py-2 shadow-sm transition-colors whitespace-nowrap"
+            >
+              <Mic size={15} />
+              <span className="hidden sm:inline">AI 語音助理</span>
+              <span className="sm:hidden">AI</span>
+            </button>
+            <button
+              onClick={() => setShowEdit(true)}
+              className="flex items-center gap-1 text-xs text-gray-500 hover:text-blue-600 border border-gray-200 hover:border-blue-300 rounded-md px-2 py-2 transition-colors whitespace-nowrap"
+            >
+              <Edit2 size={12} /><span className="hidden sm:inline"> 編輯</span>
+            </button>
+          </div>
+        </div>
+        {/* Detail info row */}
+        <div className="flex flex-wrap gap-x-6 gap-y-1 text-sm text-gray-600 mb-2">
+          <span className="flex items-center gap-1"><Calendar size={13} className="text-gray-400" />{patient.birth_date} ({calcAge(patient.birth_date)}歲)</span>
+          <span className="flex items-center gap-1"><User size={13} className="text-gray-400" />血型：{patient.blood_type || '不詳'}</span>
+          {patient.room_no && <span>房號：{patient.room_no} / 床號：{patient.bed_no}</span>}
+          {patient.nhi_no && <span>健保號：{patient.nhi_no}</span>}
+          <span>入住：{patient.admission_date}</span>
+        </div>
+        {(patient.emergency_contact_name || patient.emergency_contact_phone) && (
+          <div className="mb-2 text-sm text-gray-500 flex items-center gap-1">
+            <Phone size={13} className="text-gray-400" />
+            緊急聯絡：{patient.emergency_contact_name}（{patient.emergency_contact_relation}）{patient.emergency_contact_phone}
+          </div>
+        )}
+        {/* Warning / Notes */}
+        <div className="flex items-start gap-2">
+          {patient.notes ? (
+            <div className="flex-1 flex items-start gap-1 text-sm text-orange-600 bg-orange-50 border border-orange-200 rounded-md px-3 py-1.5">
+              <AlertTriangle size={13} className="mt-0.5 shrink-0" />
+              <span>{patient.notes}</span>
+            </div>
+          ) : (
+            <div className="flex-1 flex items-center gap-1 text-xs text-gray-300 bg-gray-50 border border-dashed border-gray-200 rounded-md px-3 py-1.5">
+              <AlertTriangle size={12} className="shrink-0" />
+              <span>無注意事項警告</span>
+            </div>
+          )}
+          <button
+            onClick={() => setShowEdit(true)}
+            title="編輯警告"
+            className="shrink-0 flex items-center gap-1 text-xs text-orange-500 hover:text-orange-700 border border-orange-200 hover:border-orange-400 bg-orange-50 hover:bg-orange-100 rounded-md px-2 py-1.5 transition-colors"
+          >
+            <Edit2 size={12} /> 編輯警告
+          </button>
         </div>
       </div>
 
