@@ -6,8 +6,6 @@
   body {
     @apply bg-gray-50 text-gray-900;
     font-family: 'Microsoft JhengHei', '微軟正黑體', 'Noto Sans TC', -apple-system, sans-serif;
-    /* Safe area for iPhone notch/home bar */
-    padding-env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
   }
 }
 
