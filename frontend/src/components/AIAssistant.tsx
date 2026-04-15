@@ -104,19 +104,26 @@ export default function AIAssistant({ patientId, patientName, open, onOpenChange
   const [interimText, setInterimText] = useState('');
 
   const recognitionRef = useRef<any>(null);
+  const listeningRef = useRef(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, interimText]);
 
-  // Check API key on open
+  // Check API key on open; stop STT on close
   useEffect(() => {
     if (open) {
       api.get('/ai/status').then(r => {
         if (!r.data.configured) setShowKeyWarning(true);
         else setShowKeyWarning(false);
       }).catch(() => {});
+    } else {
+      listeningRef.current = false;
+      recognitionRef.current?.stop();
+      recognitionRef.current = null;
+      setListening(false);
+      setInterimText('');
     }
   }, [open]);
 
@@ -126,8 +133,9 @@ export default function AIAssistant({ patientId, patientName, open, onOpenChange
     if (!SpeechRecognition) return;
     const rec = new SpeechRecognition();
     rec.lang = 'zh-TW';
-    rec.continuous = false;
+    rec.continuous = true;
     rec.interimResults = true;
+    rec.maxAlternatives = 1;
     rec.onresult = (event: any) => {
       let interim = '', final = '';
       for (let i = event.resultIndex; i < event.results.length; i++) {
@@ -138,16 +146,33 @@ export default function AIAssistant({ patientId, patientName, open, onOpenChange
       setInterimText(interim);
       if (final) { setInput(prev => (prev + ' ' + final).trim()); setInterimText(''); }
     };
-    rec.onerror = () => { setListening(false); setInterimText(''); };
-    rec.onend = () => { setListening(false); setInterimText(''); };
+    rec.onerror = (event: any) => {
+      // 'no-speech' is harmless — just means silence, keep going
+      if (event.error === 'no-speech') return;
+      setListening(false);
+      setInterimText('');
+    };
+    rec.onend = () => {
+      // Auto-restart if still supposed to be listening (browser stops after ~60s)
+      if (recognitionRef.current === rec && listeningRef.current) {
+        try { rec.start(); } catch (_) { setListening(false); setInterimText(''); }
+      } else {
+        setListening(false);
+        setInterimText('');
+      }
+    };
     recognitionRef.current = rec;
+    listeningRef.current = true;
     rec.start();
     setListening(true);
   }, []);
 
   const stopListening = useCallback(() => {
+    listeningRef.current = false;
     recognitionRef.current?.stop();
+    recognitionRef.current = null;
     setListening(false);
+    setInterimText('');
   }, []);
 
   // ---- Send ---------------------------------------------------------------
