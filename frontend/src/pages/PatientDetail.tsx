@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, User, Calendar, Phone, AlertTriangle, Edit2 } from 'lucide-react';
+import { ArrowLeft, User, Calendar, Phone, AlertTriangle, Edit2, Mic } from 'lucide-react';
 import api from '../api/client';
 import { Patient } from '../types';
 import AIAssistant from '../components/AIAssistant';
@@ -36,6 +36,7 @@ export default function PatientDetail() {
   const [patient, setPatient] = useState<Patient | null>(null);
   const [loading, setLoading] = useState(true);
   const [showEdit, setShowEdit] = useState(false);
+  const [aiOpen, setAiOpen] = useState(false);
   const activeTab = tab || 'history';
 
   const loadPatient = () => {
@@ -73,12 +74,23 @@ export default function PatientDetail() {
               <span className={`text-xs px-2 py-0.5 rounded font-medium ${patient.gender === 'F' ? 'bg-pink-100 text-pink-700' : 'bg-blue-100 text-blue-700'}`}>
                 {patient.gender === 'F' ? '女' : '男'}
               </span>
-              <button
-                onClick={() => setShowEdit(true)}
-                className="ml-auto flex items-center gap-1 text-xs text-gray-500 hover:text-blue-600 border border-gray-200 hover:border-blue-300 rounded-md px-2 py-1 transition-colors"
-              >
-                <Edit2 size={12} /> 編輯住民資料
-              </button>
+              {/* Action buttons */}
+              <div className="ml-auto flex items-center gap-2 flex-wrap">
+                {/* ★ AI 語音助理 — the main entry point ★ */}
+                <button
+                  onClick={() => setAiOpen(true)}
+                  className="flex items-center gap-1.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg px-3 py-1.5 shadow-sm transition-colors"
+                >
+                  <Mic size={15} />
+                  <span>AI 語音助理</span>
+                </button>
+                <button
+                  onClick={() => setShowEdit(true)}
+                  className="flex items-center gap-1 text-xs text-gray-500 hover:text-blue-600 border border-gray-200 hover:border-blue-300 rounded-md px-2 py-1 transition-colors"
+                >
+                  <Edit2 size={12} /> 編輯住民資料
+                </button>
+              </div>
             </div>
             <div className="mt-2 flex flex-wrap gap-x-6 gap-y-1 text-sm text-gray-600">
               <span className="flex items-center gap-1"><Calendar size={13} className="text-gray-400" />{patient.birth_date} ({calcAge(patient.birth_date)}歲)</span>
@@ -148,11 +160,13 @@ export default function PatientDetail() {
         </div>
       </div>
 
-      {/* AI Assistant floating button */}
+      {/* AI Assistant panel (controlled by aiOpen state) */}
       <AIAssistant
         patientId={id!}
         patientName={patient.name}
-        onActionExecuted={() => {/* tabs will reload on next focus */}}
+        open={aiOpen}
+        onOpenChange={setAiOpen}
+        onActionExecuted={loadPatient}
       />
 
       {showEdit && patient && (
