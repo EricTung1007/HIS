@@ -257,20 +257,24 @@ export default function AIAssistant({ patientId, patientName, onActionExecuted }
   // ---- Render -------------------------------------------------------------
   return (
     <>
-      {/* Floating button */}
+      {/* Floating button — positioned above iPhone home bar */}
       <button
         onClick={() => setOpen(true)}
-        className={`fixed bottom-6 right-6 z-40 w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-all
+        style={{ bottom: 'calc(1.5rem + env(safe-area-inset-bottom, 0px))' }}
+        className={`fixed right-6 z-40 w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-all
           ${open ? 'opacity-0 pointer-events-none' : 'bg-blue-600 hover:bg-blue-700 text-white hover:scale-110'}`}
         title="AI 護理助理"
       >
         <Bot size={24} />
       </button>
 
-      {/* Panel */}
+      {/* Panel — full-screen on mobile, floating on desktop */}
       {open && (
-        <div className="fixed bottom-4 right-4 z-50 w-96 max-w-[calc(100vw-2rem)] bg-white rounded-2xl shadow-2xl border border-gray-200 flex flex-col"
-          style={{ height: '580px' }}>
+        <div className="fixed z-50 bg-white shadow-2xl border border-gray-200 flex flex-col
+          inset-0 rounded-none
+          sm:inset-auto sm:bottom-4 sm:right-4 sm:w-96 sm:rounded-2xl sm:max-w-[calc(100vw-2rem)]"
+          style={{}}>
+
 
           {/* Header */}
           <div className="flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-blue-600 to-blue-700 rounded-t-2xl">

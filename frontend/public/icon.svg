@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="80" fill="#1d4ed8"/>
+  <!-- Cross -->
+  <rect x="192" y="100" width="128" height="312" rx="20" fill="white"/>
+  <rect x="100" y="192" width="312" height="128" rx="20" fill="white"/>
+  <!-- Small heart bottom-right -->
+  <path d="M370 370 q0-18 18-18 q18 0 18 18 q0 18-18 32 q-18-14-18-32z" fill="#93c5fd"/>
+</svg>

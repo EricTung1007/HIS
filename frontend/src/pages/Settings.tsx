@@ -36,7 +36,7 @@ export default function Settings() {
     <div className="max-w-2xl space-y-6">
       <h1 className="text-xl font-bold text-gray-900">系統設定</h1>
 
-      {/* AI Settings Card */}
+      {/* AI Settings */}
       <div className="card space-y-4">
         <div className="flex items-center gap-2">
           <Bot size={18} className="text-blue-600" />
@@ -48,37 +48,34 @@ export default function Settings() {
           <ul className="list-disc list-inside space-y-0.5 text-xs text-blue-700">
             <li>照護人員可用自然語言（語音或文字）記錄照護動作</li>
             <li>AI 自動解析並寫入對應的記錄（生命徵象、出入量、給藥、護理記錄）</li>
-            <li>支援中文語音輸入（需使用 Chrome 或 Edge 瀏覽器）</li>
-            <li>使用 Anthropic Claude 模型進行自然語言處理</li>
+            <li>使用 OpenAI GPT-4o 模型進行自然語言解析</li>
+            <li>語音輸入使用瀏覽器內建 Web Speech API（zh-TW）</li>
           </ul>
         </div>
 
-        {/* Server status */}
         {serverStatus && (
           <div className={`flex items-center gap-2 text-sm px-3 py-2 rounded-lg ${
             serverStatus.configured ? 'bg-green-50 text-green-700' : 'bg-yellow-50 text-yellow-700'
           }`}>
             {serverStatus.configured
-              ? <><CheckCircle size={14} /> API Key 已設定（來源：{serverStatus.source === 'env' ? '環境變數' : '手動設定'}）</>
-              : <><AlertCircle size={14} /> 尚未設定 API Key</>}
+              ? <><CheckCircle size={14} /> OpenAI API Key 已設定（來源：{serverStatus.source === 'env' ? '環境變數' : '手動設定'}）</>
+              : <><AlertCircle size={14} /> 尚未設定 OpenAI API Key</>}
           </div>
         )}
 
-        {/* API Key input */}
         <div>
           <label className="label flex items-center gap-1">
-            <Key size={13} /> Anthropic API Key
+            <Key size={13} /> OpenAI API Key
           </label>
           <div className="flex gap-2">
             <input
               type="password"
               className="input-field flex-1 font-mono text-xs"
-              placeholder="sk-ant-..."
+              placeholder="sk-..."
               value={apiKey}
               onChange={e => { setApiKey(e.target.value); setStatus('idle'); }}
             />
-            <button onClick={save} disabled={!apiKey.trim() || status === 'saving'}
-              className="btn-primary whitespace-nowrap">
+            <button onClick={save} disabled={!apiKey.trim() || status === 'saving'} className="btn-primary whitespace-nowrap">
               {status === 'saving' ? '儲存中...' : '套用'}
             </button>
             {apiKey && <button onClick={clear} className="btn-secondary">清除</button>}
@@ -86,20 +83,21 @@ export default function Settings() {
           {status === 'ok' && <p className="text-xs text-green-600 mt-1 flex items-center gap-1"><CheckCircle size={11} />API Key 設定成功</p>}
           {status === 'error' && <p className="text-xs text-red-600 mt-1 flex items-center gap-1"><AlertCircle size={11} />設定失敗，請確認 Key 格式正確</p>}
           <p className="text-xs text-gray-400 mt-1">
-            前往 <a href="https://console.anthropic.com" target="_blank" rel="noopener noreferrer"
+            前往{' '}
+            <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer"
               className="text-blue-500 hover:underline inline-flex items-center gap-0.5">
-              console.anthropic.com <ExternalLink size={10} />
-            </a> 取得 API Key。Key 僅儲存於本機，不會上傳至任何伺服器。
+              platform.openai.com/api-keys <ExternalLink size={10} />
+            </a>{' '}
+            取得 API Key。Key 僅儲存於本機瀏覽器，不會上傳至任何第三方。
           </p>
         </div>
 
-        {/* Alternatively use env var */}
         <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 text-xs text-gray-600 space-y-1">
-          <div className="font-medium text-gray-700">或使用環境變數（推薦用於正式部署）</div>
+          <div className="font-medium text-gray-700">或使用環境變數（推薦正式部署）</div>
           <div className="font-mono bg-gray-100 rounded px-2 py-1 text-gray-800">
-            ANTHROPIC_API_KEY=sk-ant-... node src/server.js
+            OPENAI_API_KEY=sk-... node src/server.js
           </div>
-          <div>環境變數的優先順序高於手動設定的 Key。</div>
+          <div>環境變數優先順序高於手動設定的 Key。</div>
         </div>
       </div>
 
@@ -114,12 +112,13 @@ export default function Settings() {
         }`}>
           {sttSupported
             ? <><CheckCircle size={14} /> 您的瀏覽器支援語音輸入（Web Speech API）</>
-            : <><AlertCircle size={14} /> 您的瀏覽器不支援語音輸入，請改用 Chrome 或 Edge</>}
+            : <><AlertCircle size={14} /> 不支援語音輸入，請使用 Safari（iOS）或 Chrome</>}
         </div>
         <ul className="text-xs text-gray-500 list-disc list-inside space-y-0.5">
-          <li>語音辨識使用瀏覽器內建的 Web Speech API，語言設定為 zh-TW（台灣中文）</li>
-          <li>語音資料由 Google/Microsoft 伺服器處理（取決於瀏覽器），不經過本系統後端</li>
-          <li>請在安靜環境下使用，效果較佳</li>
+          <li>iOS Safari 14.5+ 支援語音輸入，語言設定 zh-TW</li>
+          <li>Android Chrome 也支援語音輸入</li>
+          <li>語音資料由 Google/Apple 伺服器處理，不經過本系統</li>
+          <li>在安靜環境使用效果最佳</li>
         </ul>
       </div>
 

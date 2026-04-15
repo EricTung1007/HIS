@@ -1,0 +1,20 @@
+{
+  "name": "長照資訊系統 HIS",
+  "short_name": "長照HIS",
+  "description": "台灣長期照護機構護理資訊系統",
+  "theme_color": "#1d4ed8",
+  "background_color": "#1d4ed8",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "start_url": "/",
+  "lang": "zh-TW",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
