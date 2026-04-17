@@ -7,11 +7,18 @@ const router = express.Router({ mergeParams: true });
 router.use(authMiddleware);
 
 let runtimeApiKey = '';
+let runtimeBaseURL = '';
+let runtimeModel = 'gpt-4o';
 
 function getClient(req) {
   const key = process.env.OPENAI_API_KEY || req.headers['x-api-key'] || runtimeApiKey;
   if (!key) return null;
-  return new OpenAI({ apiKey: key });
+  const baseURL = process.env.OPENAI_BASE_URL || runtimeBaseURL || undefined;
+  return new OpenAI({ apiKey: key, ...(baseURL ? { baseURL } : {}) });
+}
+
+function getModel() {
+  return process.env.OPENAI_MODEL || runtimeModel || 'gpt-4o';
 }
 
 function buildPatientContext(pid) {
@@ -112,16 +119,19 @@ router.get('/status', (req, res) => {
   res.json({
     configured: !!key,
     source: process.env.OPENAI_API_KEY ? 'env' : (runtimeApiKey ? 'runtime' : 'none'),
-    provider: 'openai',
+    base_url: process.env.OPENAI_BASE_URL || runtimeBaseURL || '',
+    model: getModel(),
   });
 });
 
 // POST /api/ai/config
 router.post('/config', (req, res) => {
-  const { api_key } = req.body;
+  const { api_key, base_url, model } = req.body;
   if (!api_key) return res.status(400).json({ error: '請提供 API Key' });
   runtimeApiKey = api_key;
-  res.json({ success: true, message: 'API Key 已設定' });
+  if (base_url !== undefined) runtimeBaseURL = base_url;
+  if (model) runtimeModel = model;
+  res.json({ success: true, message: 'AI 設定已更新' });
 });
 
 // POST /api/patients/:pid/ai/chat
@@ -138,7 +148,7 @@ router.post('/chat', async (req, res) => {
 
   try {
     const completion = await client.chat.completions.create({
-      model: 'gpt-4o',
+      model: getModel(),
       response_format: { type: 'json_object' },
       messages: [
         { role: 'system', content: buildSystemPrompt(ctx) },
