@@ -38,16 +38,24 @@ function buildPatientContext(pid) {
     "SELECT type, SUM(amount) as total FROM intake_output WHERE patient_id = ? AND record_date = ? GROUP BY type"
   ).all(pid, today);
 
-  return { patient, meds, latestVitals, ioToday };
+  // Load common billing codes for AI matching (AA/BA/BB/BC/BD/GA categories)
+  const billingCodes = db.prepare(
+    `SELECT code, name, price FROM ltc_billing_codes
+     WHERE category IN ('AA','BA','BB','BC','BD','GA')
+     ORDER BY code LIMIT 60`
+  ).all();
+
+  return { patient, meds, latestVitals, ioToday, billingCodes };
 }
 
 function buildSystemPrompt(ctx) {
-  const { patient, meds, latestVitals, ioToday } = ctx;
+  const { patient, meds, latestVitals, ioToday, billingCodes } = ctx;
   const age = Math.floor((Date.now() - new Date(patient.birth_date)) / (365.25 * 24 * 3600 * 1000));
   const ioSummary = ioToday.map(r => `${r.type === 'intake' ? '攝入' : '排出'}: ${r.total}mL`).join(', ') || '尚無記錄';
   const medList = meds.map(m =>
     `${m.medication_name} ${m.dose}${m.unit} ${m.route} ${m.frequency}${m.times_per_day ? ' (' + m.times_per_day + ')' : ''}`
   ).join('\n  ') || '無';
+  const billingList = (billingCodes || []).map(c => `${c.code} ${c.name} ${c.price}元`).join('\n  ');
 
   return `你是台灣長照機構的AI護理助理，協助照護人員用自然語言記錄照護資料。
 
@@ -64,6 +72,9 @@ function buildSystemPrompt(ctx) {
 【最近一次生命徵象】${latestVitals
     ? `血壓${latestVitals.systolic_bp}/${latestVitals.diastolic_bp} 心跳${latestVitals.heart_rate} 體溫${latestVitals.temperature}°C 血氧${latestVitals.spo2}%`
     : '尚無記錄'}
+
+【長照核銷碼參考表（部分）】
+  ${billingList}
 
 ---
 你的任務：將照護人員說的自然語言轉換成結構化 JSON，執行以下其中一種動作：
@@ -90,10 +101,15 @@ function buildSystemPrompt(ctx) {
    data: { note_type("SOAP"|"narrative"), subjective, objective, assessment, plan, content }
    例："住民情緒穩定，無不適主訴"
 
-6. query — 查詢（不需記錄，只回答）
+6. billing — 長照核銷碼（照服員描述照護動作，自動匹配最適合的核銷碼）
+   data: { code(核銷碼如BA07), name(照顧組合名稱), price(單價), quantity(數量,預設1), notes }
+   例："幫住民洗澡" → BA07 / "翻身拍背" → BA10 / "協助進食" → BA04 / "測量血壓" → BA03
+   ⚠️ 優先使用核銷碼參考表中的代碼，若無法確定請設 needs_confirm: true
+
+7. query — 查詢（不需記錄，只回答）
    data: { answer }
 
-7. unknown — 無法辨識
+8. unknown — 無法辨識
    data: null
 
 回傳嚴格 JSON（不要有其他文字）：
@@ -101,7 +117,7 @@ function buildSystemPrompt(ctx) {
   "understanding": "你對指令的理解",
   "action": "動作類型",
   "data": { ... },
-  "confirmation": "給照護人員看的確認訊息（繁體中文）",
+  "confirmation": "給照護人員看的確認訊息（繁體中文），billing類型請包含代碼和金額",
   "needs_confirm": true或false
 }
 
@@ -110,6 +126,7 @@ function buildSystemPrompt(ctx) {
 - 指令明確時 needs_confirm = false 可直接執行
 - 涉及藥物或有疑義時 needs_confirm = true
 - 用藥名稱盡量對應現有用藥列表
+- billing 動作：確定對應代碼時 needs_confirm = false；不確定時 needs_confirm = true
 - 只回傳 JSON，不要任何說明文字`;
 }
 

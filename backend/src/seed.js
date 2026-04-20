@@ -162,6 +162,21 @@ if (p1 && p2 && p3) {
   console.log('✓ 護理記錄建立完成');
 }
 
+// 長照核銷碼
+const billingCodesFile = require('path').join(__dirname, 'ltc-billing-codes.json');
+try {
+  const billingCodes = JSON.parse(require('fs').readFileSync(billingCodesFile, 'utf-8'));
+  const insertCode = db.prepare(`INSERT OR IGNORE INTO ltc_billing_codes (code, name, description, price, remote_price, category) VALUES (?, ?, ?, ?, ?, ?)`);
+  const insertMany = db.transaction((codes) => {
+    for (const c of codes) {
+      insertCode.run(c.code, c.name, c.description || '', c.price, c.remote_price, c.category || '');
+    }
+  });
+  insertMany(billingCodes);
+  console.log(`✓ 長照核銷碼建立完成 (${billingCodes.length} 筆)`);
+} catch (e) {
+  console.log('⚠ 核銷碼匯入失敗:', e.message);
+}
 console.log('\n測試資料建立完成！');
 console.log('預設帳號：');
 console.log('  管理員: admin / admin123');

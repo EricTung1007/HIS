@@ -55,6 +55,12 @@ async function executeAction(patientId: string, response: AIResponse) {
     case 'nursing_note':
       await api.post(`/patients/${patientId}/notes`, { note_datetime: datetimeStr, note_type: data?.note_type || 'narrative', ...data });
       break;
+    case 'billing':
+      if (!data?.code) throw new Error('無法辨識對應的核銷碼');
+      await api.post(`/patients/${patientId}/billing/records`, {
+        code: data.code, service_date: today, quantity: data.quantity || 1, notes: data.notes || '',
+      });
+      break;
     case 'query':
     case 'unknown':
       break;
@@ -65,7 +71,8 @@ async function executeAction(patientId: string, response: AIResponse) {
 
 const ACTION_LABELS: Record<string, string> = {
   vital_signs: '📊 生命徵象', intake: '💧 攝入量', output: '🚽 排出量',
-  mar: '💊 給藥記錄', nursing_note: '📝 護理記錄', query: '🔍 查詢', unknown: '❓ 無法辨識',
+  mar: '💊 給藥記錄', nursing_note: '📝 護理記錄',
+  billing: '💰 核銷碼', query: '🔍 查詢', unknown: '❓ 無法辨識',
 };
 const ACTION_COLORS: Record<string, string> = {
   vital_signs: 'bg-red-50 border-red-200 text-red-700',
@@ -73,6 +80,7 @@ const ACTION_COLORS: Record<string, string> = {
   output: 'bg-orange-50 border-orange-200 text-orange-700',
   mar: 'bg-green-50 border-green-200 text-green-700',
   nursing_note: 'bg-purple-50 border-purple-200 text-purple-700',
+  billing: 'bg-emerald-50 border-emerald-200 text-emerald-700',
   query: 'bg-gray-50 border-gray-200 text-gray-700',
   unknown: 'bg-gray-50 border-gray-200 text-gray-400',
 };
@@ -85,6 +93,9 @@ const EXAMPLES = [
   { label: '尿了300cc', text: '尿了300cc' },
   { label: '已給藥', text: '已給早上的藥' },
   { label: '護理記錄', text: '住民情緒穩定，無不適主訴' },
+  { label: '💰洗澡洗頭', text: '幫住民洗澡洗頭' },
+  { label: '💰翻身拍背', text: '翻身拍背' },
+  { label: '💰協助進食', text: '協助進食' },
 ];
 
 // ---- Main Component -------------------------------------------------------
@@ -92,7 +103,7 @@ export default function AIAssistant({ patientId, patientName, open, onOpenChange
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'system',
-      text: `歡迎使用 AI 護理助理！\n\n您可以用「語音」或「文字」輸入照護動作，AI 會自動解析並寫入系統。\n\n支援的記錄類型：\n📊 生命徵象（血壓、心跳、體溫、血氧...）\n💧 攝入量（喝水、管灌、點滴...）\n🚽 排出量（尿液、糞便...）\n💊 給藥記錄（MAR）\n📝 護理記錄`,
+      text: `歡迎使用 AI 護理助理！\n\n您可以用「語音」或「文字」輸入照護動作，AI 會自動解析並寫入系統。\n\n支援的記錄類型：\n📊 生命徵象（血壓、心跳、體溫、血氧...）\n💧 攝入量（喝水、管灌、點滴...）\n🚽 排出量（尿液、糞便...）\n💊 給藥記錄（MAR）\n📝 護理記錄\n💰 核銷碼（描述服務內容即可自動對碼）`,
     },
   ]);
   const [input, setInput] = useState('');
