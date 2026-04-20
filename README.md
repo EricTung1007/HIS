@@ -28,6 +28,20 @@
 
 ## 快速開始
 
+### macOS（推薦）
+
+**一行啟動**，自動安裝 Node.js、安裝依賴、啟動前後端：
+
+```bash
+git clone <repo-url>
+cd HIS
+./start.sh
+```
+
+- 若尚未安裝 Homebrew / Node.js，腳本會自動安裝
+- 啟動後顯示本機與手機存取網址
+- **按一次 `Ctrl+C`** 停止所有服務
+
 ### Windows
 
 **1. 安裝 Node.js**（若尚未安裝）
@@ -47,41 +61,27 @@ cd ..\frontend
 npm install
 ```
 
-**4. 建立測試資料**
+**4. 建立測試資料**（第一次執行）
 ```powershell
 cd ..\backend
 node src/seed.js
 ```
 
-**5. 啟動後端**（開一個終端機視窗）
+**5. 啟動後端**（Terminal 1）
 ```powershell
 cd backend
 node src/server.js
 ```
-看到 `Server running on port 3001` 即成功。
 
-**6. 啟動前端**（開另一個終端機視窗）
+**6. 啟動前端**（Terminal 2）
 ```powershell
 cd frontend
 npm run dev
 ```
-看到 `Local: http://localhost:3000/` 即成功。
 
-**7. 開啟瀏覽器**（建議使用 Chrome 或 Edge）
-```
-http://localhost:3000
-```
+開啟 Chrome 或 Edge 至 `http://localhost:3000`
 
-### macOS / Linux
-
-```bash
-cd backend && npm install && cd ../frontend && npm install
-cd ../backend && node src/seed.js
-# Terminal 1
-cd backend && node src/server.js
-# Terminal 2
-cd frontend && npm run dev
-```
+**停止：** 在各自的終端機視窗按 `Ctrl+C`
 
 ---
 
