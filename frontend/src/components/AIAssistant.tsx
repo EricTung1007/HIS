@@ -48,6 +48,20 @@ async function executeAction(patientId: string, response: AIResponse) {
     case 'output':
       await api.post(`/patients/${patientId}/io`, { record_date: today, record_time: timeStr, type: 'output', unit: data?.unit || 'mL', ...data });
       break;
+    case 'medication_order':
+      if (!data?.medication_name) throw new Error('無法辨識藥物名稱');
+      await api.post(`/patients/${patientId}/medications`, {
+        medication_name: data.medication_name,
+        dose: String(data.dose || ''),
+        unit: data.unit || 'mg',
+        route: data.route || 'PO',
+        frequency: data.frequency || 'QD',
+        times_per_day: data.times_per_day || '08:00',
+        start_date: today,
+        indication: data.indication || '',
+        status: 'active',
+      });
+      break;
     case 'mar':
       if (!data?.order_id) throw new Error('找不到對應的用藥醫囑，請至用藥記錄頁面手動記錄');
       await api.post(`/patients/${patientId}/mar`, { order_id: data.order_id, administered_at: datetimeStr, dose_given: data.dose_given, status: data.status || 'given', notes: data.notes });
@@ -61,6 +75,24 @@ async function executeAction(patientId: string, response: AIResponse) {
         code: data.code, service_date: today, quantity: data.quantity || 1, notes: data.notes || '',
       });
       break;
+    case 'update_patient': {
+      const updateFields: Record<string, string> = {};
+      if (data?.notes !== undefined) updateFields.notes = data.notes;
+      if (data?.care_level !== undefined) updateFields.care_level = data.care_level;
+      if (data?.room_no !== undefined) updateFields.room_no = data.room_no;
+      if (data?.bed_no !== undefined) updateFields.bed_no = data.bed_no;
+      if (Object.keys(updateFields).length === 0) throw new Error('沒有要更新的欄位');
+      await api.patch(`/patients/${patientId}`, updateFields);
+      break;
+    }
+    case 'family_log': {
+      await api.post(`/patients/${patientId}/family-logs`, {
+        log_date: today,
+        extra_notes: data?.extra_notes,
+        staff_notes: data?.staff_notes,
+      });
+      break;
+    }
     case 'query':
     case 'unknown':
       break;
@@ -70,8 +102,9 @@ async function executeAction(patientId: string, response: AIResponse) {
 }
 
 const ACTION_LABELS: Record<string, string> = {
-  vital_signs: '📊 生命徵象', intake: '💧 攝入量', output: '🚽 排出量',
-  mar: '💊 給藥記錄', nursing_note: '📝 護理記錄',
+  vital_signs: '📊 生命徵象', intake: '💧 攝入量', output: '🚿 排出量',
+  mar: '💊 給藥記錄', medication_order: '💊+ 新增藥物醫囑', nursing_note: '📝 護理記錄',
+  update_patient: '✏️ 更新住民資料', family_log: '📖 聯絡簿補充',
   billing: '💰 核銷碼', query: '🔍 查詢', unknown: '❓ 無法辨識',
 };
 const ACTION_COLORS: Record<string, string> = {
@@ -79,7 +112,10 @@ const ACTION_COLORS: Record<string, string> = {
   intake: 'bg-blue-50 border-blue-200 text-blue-700',
   output: 'bg-orange-50 border-orange-200 text-orange-700',
   mar: 'bg-green-50 border-green-200 text-green-700',
+  medication_order: 'bg-teal-50 border-teal-200 text-teal-700',
   nursing_note: 'bg-purple-50 border-purple-200 text-purple-700',
+  update_patient: 'bg-amber-50 border-amber-200 text-amber-700',
+  family_log: 'bg-indigo-50 border-indigo-200 text-indigo-700',
   billing: 'bg-emerald-50 border-emerald-200 text-emerald-700',
   query: 'bg-gray-50 border-gray-200 text-gray-700',
   unknown: 'bg-gray-50 border-gray-200 text-gray-400',
@@ -117,6 +153,8 @@ export default function AIAssistant({ patientId, patientName, open, onOpenChange
   const recognitionRef = useRef<any>(null);
   const listeningRef = useRef(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  // Accumulated conversation turns sent to backend for context
+  const conversationHistory = useRef<{ role: 'user' | 'assistant'; content: string }[]>([]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -135,6 +173,7 @@ export default function AIAssistant({ patientId, patientName, open, onOpenChange
       recognitionRef.current = null;
       setListening(false);
       setInterimText('');
+      conversationHistory.current = [];
     }
   }, [open]);
 
@@ -195,24 +234,42 @@ export default function AIAssistant({ patientId, patientName, open, onOpenChange
     setMessages(prev => [...prev, { role: 'user', text: trimmed }]);
     setProcessing(true);
 
+    // Append user turn to history before sending
+    conversationHistory.current = [
+      ...conversationHistory.current,
+      { role: 'user', content: trimmed },
+    ];
+
     try {
       const { data } = await api.post(
         `/patients/${patientId}/ai/chat`,
-        { message: trimmed },
+        {
+          message: trimmed,
+          // Send last 10 turns for context (skip the turn we just added)
+          history: conversationHistory.current.slice(0, -1),
+        },
         apiKey ? { headers: { 'x-api-key': apiKey } } : {}
       );
       const aiResp = data as AIResponse;
-      const assistantMsg: Message = { role: 'assistant', text: aiResp.confirmation, response: aiResp, status: 'pending' };
+
+      // Always require confirmation — never auto-execute
+      const assistantMsg: Message = {
+        role: 'assistant',
+        text: aiResp.confirmation,
+        response: aiResp,
+        status: aiResp.action === 'unknown' || aiResp.action === 'query' ? 'done' : 'pending',
+      };
       setMessages(prev => [...prev, assistantMsg]);
 
-      if (!aiResp.needs_confirm && aiResp.action !== 'unknown' && aiResp.action !== 'query') {
-        try {
-          await executeAction(patientId, aiResp);
-          setMessages(prev => prev.map((m, i) => i === prev.length - 1 ? { ...m, status: 'done' } : m));
-          onActionExecuted?.();
-        } catch (err: any) {
-          setMessages(prev => prev.map((m, i) => i === prev.length - 1 ? { ...m, status: 'error', text: err.message } : m));
-        }
+      // Append assistant turn to history so next message has context
+      conversationHistory.current = [
+        ...conversationHistory.current,
+        { role: 'assistant', content: `${aiResp.understanding} → ${aiResp.confirmation}` },
+      ];
+
+      // Keep history bounded to last 20 turns
+      if (conversationHistory.current.length > 20) {
+        conversationHistory.current = conversationHistory.current.slice(-20);
       }
     } catch (err: any) {
       const errMsg = err.response?.data?.error || '發生錯誤，請稍後再試';
@@ -220,7 +277,7 @@ export default function AIAssistant({ patientId, patientName, open, onOpenChange
     } finally {
       setProcessing(false);
     }
-  }, [patientId, apiKey, processing, onActionExecuted]);
+  }, [patientId, apiKey, processing]);
 
   const confirmAction = async (msg: Message, idx: number) => {
     if (!msg.response) return;
@@ -317,7 +374,7 @@ export default function AIAssistant({ patientId, patientName, open, onOpenChange
                       </div>
                     )}
                   </div>
-                  {msg.response?.needs_confirm && msg.status === 'pending' && (
+                  {msg.status === 'pending' && msg.response && msg.response.action !== 'query' && msg.response.action !== 'unknown' && (
                     <div className="flex gap-2 pl-1 pt-1">
                       <button onClick={() => confirmAction(msg, idx)}
                         className="text-xs bg-green-600 text-white px-3 py-1.5 rounded-full hover:bg-green-700 flex items-center gap-1 font-medium">

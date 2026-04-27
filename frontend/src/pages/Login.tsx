@@ -15,8 +15,12 @@ export default function Login() {
     setError('');
     setLoading(true);
     try {
-      await login(username, password);
-      navigate('/dashboard');
+      const loggedInUser = await login(username, password);
+      if (loggedInUser.role === 'caretaker') {
+        navigate('/caretaker');
+      } else {
+        navigate('/dashboard');
+      }
     } catch (err: any) {
       setError(err.response?.data?.error || '登入失敗，請檢查帳號密碼');
     } finally {

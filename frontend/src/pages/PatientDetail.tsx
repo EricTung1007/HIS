@@ -12,6 +12,7 @@ import VitalSignsTab from './tabs/VitalSigns';
 import PhysicalExamTab from './tabs/PhysicalExam';
 import NursingNotesTab from './tabs/NursingNotes';
 import BillingTab from './tabs/BillingTab';
+import FamilyLogTab from './tabs/FamilyLogTab';
 
 const TABS = [
   { id: 'history', label: '病史記錄' },
@@ -22,6 +23,7 @@ const TABS = [
   { id: 'pe', label: '身體評估' },
   { id: 'notes', label: '護理記錄' },
   { id: 'billing', label: '💰 核銷碼' },
+  { id: 'family', label: '📖 家屬聯絡簿' },
 ];
 
 function calcAge(birth: string) {
@@ -84,12 +86,20 @@ export default function PatientDetail() {
           {/* Action buttons — shrink-0 so they never collapse */}
           <div className="flex items-center gap-2 shrink-0">
             <button
+              onClick={() => navigate(`/mobile-speak/${id}`)}
+              className="flex items-center gap-1.5 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg px-3 py-2 shadow-sm transition-colors whitespace-nowrap sm:hidden"
+              title="手機錄音模式"
+            >
+              <Mic size={15} />
+              <span>快速錄音</span>
+            </button>
+            <button
               onClick={() => setAiOpen(true)}
               className="flex items-center gap-1.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg px-3 py-2 shadow-sm transition-colors whitespace-nowrap"
             >
               <Mic size={15} />
               <span className="hidden sm:inline">AI 語音助理</span>
-              <span className="sm:hidden">AI</span>
+              <span className="sm:hidden">對話模式</span>
             </button>
             <button
               onClick={() => setShowEdit(true)}
@@ -164,6 +174,7 @@ export default function PatientDetail() {
           {activeTab === 'pe' && <PhysicalExamTab patientId={id!} />}
           {activeTab === 'notes' && <NursingNotesTab patientId={id!} />}
           {activeTab === 'billing' && <BillingTab patientId={id!} patientName={patient.name} />}
+          {activeTab === 'family' && <FamilyLogTab patientId={id!} />}
         </div>
       </div>
 

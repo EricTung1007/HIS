@@ -1,4 +1,5 @@
-import { Menu, LogOut, User } from 'lucide-react';
+import { Menu, LogOut, User, Mic } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
 const roleLabel: Record<string, string> = {
@@ -27,7 +28,14 @@ export default function TopBar({ onMenuClick }: Props) {
       </div>
 
       <div className="flex items-center gap-3 ml-auto">
-        <div className="flex items-center gap-1.5 text-sm text-gray-700">
+        <Link
+          to="/caretaker"
+          className="flex items-center gap-1.5 text-sm text-white bg-blue-600 hover:bg-blue-700 px-3 py-1.5 rounded-full transition-colors mr-1 sm:mr-2 shadow-sm"
+        >
+          <Mic size={15} />
+          <span className="hidden sm:inline font-medium">語音助手</span>
+        </Link>
+        <div className="flex items-center gap-1.5 text-sm text-gray-700 border-l border-gray-200 pl-3">
           <User size={15} className="text-gray-400 shrink-0" />
           <span className="font-medium truncate max-w-[100px] sm:max-w-none">{user?.name}</span>
           <span className="text-gray-400 text-xs hidden sm:inline">
@@ -36,7 +44,7 @@ export default function TopBar({ onMenuClick }: Props) {
         </div>
         <button
           onClick={logout}
-          className="flex items-center gap-1 text-sm text-gray-500 hover:text-red-600 transition-colors whitespace-nowrap"
+          className="flex items-center gap-1 text-sm text-gray-500 hover:text-red-600 transition-colors whitespace-nowrap ml-2"
         >
           <LogOut size={15} />
           <span className="hidden sm:inline">登出</span>

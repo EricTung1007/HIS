@@ -9,6 +9,7 @@ const users = [
   { username: 'nurse1', password: 'nurse123', name: '王小明護理師', role: 'nurse', department: '護理部' },
   { username: 'nurse2', password: 'nurse123', name: '李淑芬護理師', role: 'nurse', department: '護理部' },
   { username: 'doctor1', password: 'doctor123', name: '張醫師', role: 'doctor', department: '醫療部' },
+  { username: 'caretaker1', password: 'caretaker123', name: '照服員', role: 'caretaker', department: '照護部' },
 ];
 
 const insertUser = db.prepare('INSERT OR IGNORE INTO users (username, password_hash, name, role, department) VALUES (?, ?, ?, ?, ?)');
@@ -182,3 +183,4 @@ console.log('預設帳號：');
 console.log('  管理員: admin / admin123');
 console.log('  護理師: nurse1 / nurse123');
 console.log('  醫師:   doctor1 / doctor123');
+console.log('  照服員: caretaker1 / caretaker123');

@@ -53,25 +53,22 @@ router.get('/:id', (req, res) => {
   res.json(patient);
 });
 
-// PUT /api/patients/:id
-router.put('/:id', (req, res) => {
-  const {
-    name, id_number, birth_date, gender, blood_type,
-    admission_date, discharge_date, room_no, bed_no, care_level, nhi_no,
-    emergency_contact_name, emergency_contact_phone, emergency_contact_relation,
-    status, notes
-  } = req.body;
-  db.prepare(`
-    UPDATE patients SET name=?, id_number=?, birth_date=?, gender=?, blood_type=?,
-      admission_date=?, discharge_date=?, room_no=?, bed_no=?, care_level=?, nhi_no=?,
-      emergency_contact_name=?, emergency_contact_phone=?, emergency_contact_relation=?,
-      status=?, notes=?
-    WHERE id=?
-  `).run(name, id_number, birth_date, gender, blood_type,
-    admission_date, discharge_date, room_no, bed_no, care_level, nhi_no,
-    emergency_contact_name, emergency_contact_phone, emergency_contact_relation,
-    status, notes, req.params.id);
-  res.json(db.prepare('SELECT * FROM patients WHERE id = ?').get(req.params.id));
+// PATCH /api/patients/:id
+router.patch('/:id', (req, res) => {
+  const fields = req.body;
+  const keys = Object.keys(fields);
+  if (keys.length === 0) return res.status(400).json({ error: '無更新資料' });
+
+  const setClause = keys.map(k => `${k} = ?`).join(', ');
+  const values = keys.map(k => fields[k]);
+  values.push(req.params.id);
+
+  try {
+    db.prepare(`UPDATE patients SET ${setClause} WHERE id = ?`).run(...values);
+    res.json(db.prepare('SELECT * FROM patients WHERE id = ?').get(req.params.id));
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
 });
 
 // DELETE /api/patients/:id

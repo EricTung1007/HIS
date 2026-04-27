@@ -28,13 +28,20 @@ export default function Settings() {
   };
 
   const save = async () => {
-    if (!apiKey.trim()) return;
+    // If no API key is provided but we have a custom base URL (e.g. local model), use a dummy key
+    const finalKey = apiKey.trim() ? apiKey : (baseURL.trim() ? 'local-dummy-key' : '');
+    
+    if (!finalKey) {
+      setStatus('error');
+      return;
+    }
+    
     setStatus('saving');
     try {
-      localStorage.setItem('his_ai_key', apiKey);
+      localStorage.setItem('his_ai_key', finalKey);
       localStorage.setItem('his_ai_baseurl', baseURL);
       localStorage.setItem('his_ai_model', model);
-      await api.post('/ai/config', { api_key: apiKey, base_url: baseURL, model });
+      await api.post('/ai/config', { api_key: finalKey, base_url: baseURL, model });
       const r = await api.get('/ai/status');
       setServerStatus(r.data);
       setStatus('ok');
@@ -142,13 +149,17 @@ export default function Settings() {
         </div>
 
         <div className="flex gap-2">
-          <button onClick={save} disabled={!apiKey.trim() || status === 'saving'} className="btn-primary">
+          <button 
+            onClick={save} 
+            disabled={(status === 'saving') || (!apiKey.trim() && !baseURL.trim())} 
+            className="btn-primary"
+          >
             {status === 'saving' ? '儲存中...' : '套用設定'}
           </button>
-          {apiKey && <button onClick={clear} className="btn-secondary">清除</button>}
+          {(apiKey || baseURL) && <button onClick={clear} className="btn-secondary">清除</button>}
         </div>
         {status === 'ok' && <p className="text-xs text-green-600 flex items-center gap-1"><CheckCircle size={11} />設定成功</p>}
-        {status === 'error' && <p className="text-xs text-red-600 flex items-center gap-1"><AlertCircle size={11} />設定失敗，請確認 Key 格式正確</p>}
+        {status === 'error' && <p className="text-xs text-red-600 flex items-center gap-1"><AlertCircle size={11} />設定失敗，請確認 Key 格式或端點正確</p>}
 
         <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 text-xs text-gray-600 space-y-1">
           <div className="font-medium text-gray-700">環境變數（推薦正式部署）</div>

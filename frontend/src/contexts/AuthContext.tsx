@@ -4,7 +4,7 @@ import api from '../api/client';
 
 interface AuthContextType {
   user: User | null;
-  login: (username: string, password: string) => Promise<void>;
+  login: (username: string, password: string) => Promise<User>;
   logout: () => void;
   loading: boolean;
 }
@@ -29,6 +29,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem('his_token', data.token);
     localStorage.setItem('his_user', JSON.stringify(data.user));
     setUser(data.user);
+    return data.user;
   };
 
   const logout = () => {

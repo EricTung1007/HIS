@@ -246,6 +246,20 @@ db.exec(`
     FOREIGN KEY (patient_id) REFERENCES patients(id),
     FOREIGN KEY (billing_code_id) REFERENCES ltc_billing_codes(id)
   );
+
+  CREATE TABLE IF NOT EXISTS family_contact_logs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    patient_id INTEGER NOT NULL,
+    log_date DATE NOT NULL,
+    ai_summary TEXT,
+    extra_notes TEXT,
+    staff_notes TEXT,
+    created_by INTEGER,
+    updated_by INTEGER,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (patient_id) REFERENCES patients(id)
+  );
 `);
 
 module.exports = db;

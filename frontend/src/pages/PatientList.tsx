@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Plus, Search, User, AlertCircle } from 'lucide-react';
+import { Plus, Search, User, AlertCircle, Mic } from 'lucide-react';
 import api from '../api/client';
 import { Patient } from '../types';
 import Modal from '../components/Modal';
@@ -84,7 +84,12 @@ export default function PatientList() {
                   </td>
                   <td className="table-cell text-gray-600 text-xs">{p.admission_date}</td>
                   <td className="table-cell">
-                    <Link to={`/patients/${p.id}`} className="text-blue-600 hover:text-blue-800 text-xs font-medium">查看</Link>
+                    <div className="flex items-center gap-3">
+                      <Link to={`/patients/${p.id}`} className="text-blue-600 hover:text-blue-800 text-xs font-medium">查看</Link>
+                      <Link to={`/mobile-speak/${p.id}`} className="text-indigo-600 hover:text-indigo-800 p-1" title="快速錄音">
+                        <Mic size={14} />
+                      </Link>
+                    </div>
                   </td>
                 </tr>
               ))}
