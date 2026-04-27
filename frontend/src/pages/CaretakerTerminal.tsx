@@ -37,6 +37,7 @@ export default function CaretakerTerminal() {
 
   const recognitionRef = useRef<any>(null);
   const listeningRef = useRef(false);
+  const interimRef = useRef('');
 
   // Load all patients for the dropdown
   useEffect(() => {
@@ -117,6 +118,8 @@ export default function CaretakerTerminal() {
     setErrorMsg('');
     setAiResponse(null);
     setStatus('listening');
+    setInterimText('');
+    interimRef.current = '';
 
     const rec = new SpeechRecognition();
     rec.lang = 'zh-TW';
@@ -131,16 +134,23 @@ export default function CaretakerTerminal() {
         if (event.results[i].isFinal) final += t;
         else interim += t;
       }
-      setInterimText(interim);
+      
+      const currentInterim = interim || final;
+      setInterimText(currentInterim);
+      interimRef.current = currentInterim;
+
       if (final) {
         setInterimText('');
+        interimRef.current = '';
         processVoice(final);
       }
     };
 
     rec.onerror = (event: any) => {
       if (event.error === 'no-speech') {
-        setStatus('idle');
+        if (!interimRef.current) {
+          setStatus('idle');
+        }
         return;
       }
       setErrorMsg(`語音錯誤: ${event.error}`);
@@ -150,8 +160,15 @@ export default function CaretakerTerminal() {
     rec.onend = () => {
       setListening(false);
       listeningRef.current = false;
-      if (status === 'listening' && !interimText) {
-         setStatus('idle');
+      if (status === 'listening') {
+        if (interimRef.current.trim()) {
+          const textToProcess = interimRef.current;
+          setInterimText('');
+          interimRef.current = '';
+          processVoice(textToProcess);
+        } else {
+          setStatus('idle');
+        }
       }
     };
 
@@ -159,14 +176,28 @@ export default function CaretakerTerminal() {
     listeningRef.current = true;
     rec.start();
     setListening(true);
-  }, [status, interimText, selectedPatientId]);
+  }, [status, selectedPatientId]);
 
   const stopListening = useCallback(() => {
     listeningRef.current = false;
-    recognitionRef.current?.stop();
+    
+    if (interimRef.current.trim()) {
+      const textToProcess = interimRef.current;
+      setInterimText('');
+      interimRef.current = '';
+      processVoice(textToProcess);
+    } else if (status === 'listening') {
+      setStatus('idle');
+    }
+
+    try {
+      recognitionRef.current?.stop();
+    } catch (e) {
+      console.error('Stop error:', e);
+    }
     recognitionRef.current = null;
     setListening(false);
-  }, []);
+  }, [status]);
 
   const processVoice = async (text: string) => {
     if (!text.trim() || !selectedPatientId) return;
@@ -211,6 +242,7 @@ export default function CaretakerTerminal() {
     setAiResponse(null);
     setErrorMsg('');
     setInterimText('');
+    interimRef.current = '';
   };
 
   const handleLogout = () => {

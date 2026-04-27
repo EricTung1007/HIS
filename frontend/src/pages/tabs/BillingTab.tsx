@@ -129,11 +129,22 @@ export default function BillingTab({ patientId, patientName }: { patientId: stri
   const sttSupported = !!(window.SpeechRecognition || window.webkitSpeechRecognition);
   const startListening = () => {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    const rec = new SR(); rec.lang = 'zh-TW'; rec.continuous = false; rec.interimResults = false;
-    rec.onresult = (e: any) => { setAiInput(e.results[0][0].transcript); setListening(false); };
+    const rec = new SR(); 
+    rec.lang = 'zh-TW'; 
+    rec.continuous = false; 
+    rec.interimResults = true;
+    rec.onresult = (e: any) => { 
+      const transcript = e.results[0][0].transcript;
+      setAiInput(transcript); 
+      if (e.results[0].isFinal) {
+        setListening(false);
+      }
+    };
     rec.onerror = () => setListening(false);
     rec.onend = () => setListening(false);
-    recRef.current = rec; rec.start(); setListening(true);
+    recRef.current = rec; 
+    rec.start(); 
+    setListening(true);
   };
 
   return (

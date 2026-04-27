@@ -3,8 +3,8 @@ import { Plus, Trash2, Edit2, CheckCircle } from 'lucide-react';
 import api from '../../api/client';
 import { MedicationOrder } from '../../types';
 
-const ROUTES = ['PO (口服)', 'IV (靜脈)', 'IM (肌肉)', 'SC (皮下)', 'SL (舌下)', 'Topical (外用)', 'Inhale (吸入)', 'Rectal (肛門)', 'Patch (貼片)'];
-const FREQS = ['QD (每日一次)', 'BID (每日兩次)', 'TID (每日三次)', 'QID (每日四次)', 'Q4H (每4小時)', 'Q6H (每6小時)', 'Q8H (每8小時)', 'Q12H (每12小時)', 'PRN (需要時)', 'QW (每週)', 'HS (睡前)', 'AC (飯前)', 'PC (飯後)'];
+const ROUTES = ['口服 (PO)', '靜脈注射 (IV)', '肌肉注射 (IM)', '皮下注射 (SC)', '舌下含服 (SL)', '外用 (Topical)', '吸入 (Inhale)', '肛門塞劑 (Rectal)', '貼片 (Patch)'];
+const FREQS = ['每日一次 (QD)', '每日兩次 (BID)', '每日三次 (TID)', '每日四次 (QID)', '每4小時 (Q4H)', '每6小時 (Q6H)', '每8小時 (Q8H)', '每12小時 (Q12H)', '需要時 (PRN)', '每週 (QW)', '睡前 (HS)', '飯前 (AC)', '飯後 (PC)'];
 
 export default function MedicationsTab({ patientId }: { patientId: string }) {
   const [orders, setOrders] = useState<MedicationOrder[]>([]);

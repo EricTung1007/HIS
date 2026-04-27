@@ -22,20 +22,23 @@ const buildSystemPrompt = (ctx) => {
 {"understanding":"","action":"","data":{},"confirmation":"","needs_confirm":false}
 
 ### MAPPING (Key -> Action {fields}):
-- "Water/Drink/Milk/Tube" -> intake {category:"oral"|"tube_feeding", amount:N}
-- "Urine/Stool/Drain" -> output {category:"urine"|"stool"|"drain", amount:N}
-- "BP/Temp/HR/O2/BS/Pain" -> vital_signs {systolic_bp:N, diastolic_bp:N, heart_rate:N, temperature:N, spo2:N, blood_glucose:N, pain_score:N, weight:N}
-- "Bathing/Turning/Assist" -> billing {code:"BAxx", name:""}
+- "水/飲料/牛奶/管灌" -> intake {category:"口服"|"管灌", amount:N}
+- "尿液/糞便/引流" -> output {category:"尿液"|"糞便"|"引流", amount:N}
+- "血壓/體溫/心跳/血氧/血糖/疼痛" -> vital_signs {systolic_bp:N, diastolic_bp:N, heart_rate:N, temperature:N, spo2:N, blood_glucose:N, pain_score:N, weight:N}
+- "洗澡/翻身/拍背/協助" -> billing {code:"BAxx", name:""}
 
 ### CONTEXT:
-Patient:${patient.name}, Bed:${patient.room_no}-${patient.bed_no}
-Meds:${medList}
-BillingCodes:${billingList}
+住民:${patient.name}, 床號:${patient.room_no}-${patient.bed_no}
+用藥醫囑:${medList}
+核銷代碼:${billingList}
 
 ### RULES:
 1. ONLY JSON.
 2. NO PLACEHOLDERS. Fill real data.
-3. Strings in "".`;
+3. Strings in "".
+4. All messages (understanding, confirmation) MUST be in Traditional Chinese (zh-TW).
+5. "understanding" is a short summary of what the user said.
+6. "confirmation" is a polite response in Traditional Chinese to confirm the action taken.`;
 };
 
 const repairJson = (raw) => {

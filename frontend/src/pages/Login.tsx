@@ -34,7 +34,7 @@ export default function Login() {
         <div className="text-center mb-8">
           <div className="text-5xl mb-3">🏥</div>
           <h1 className="text-2xl font-bold text-gray-900">長照資訊系統</h1>
-          <p className="text-sm text-gray-500 mt-1">Long-Term Care HIS</p>
+          <p className="text-sm text-gray-500 mt-1">智慧化長照管理系統</p>
         </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>

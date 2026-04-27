@@ -152,6 +152,7 @@ export default function AIAssistant({ patientId, patientName, open, onOpenChange
 
   const recognitionRef = useRef<any>(null);
   const listeningRef = useRef(false);
+  const interimRef = useRef('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   // Accumulated conversation turns sent to backend for context
   const conversationHistory = useRef<{ role: 'user' | 'assistant'; content: string }[]>([]);
@@ -173,6 +174,7 @@ export default function AIAssistant({ patientId, patientName, open, onOpenChange
       recognitionRef.current = null;
       setListening(false);
       setInterimText('');
+      interimRef.current = '';
       conversationHistory.current = [];
     }
   }, [open]);
@@ -193,22 +195,32 @@ export default function AIAssistant({ patientId, patientName, open, onOpenChange
         if (event.results[i].isFinal) final += t;
         else interim += t;
       }
-      setInterimText(interim);
-      if (final) { setInput(prev => (prev + ' ' + final).trim()); setInterimText(''); }
+      
+      const currentInterim = interim || final;
+      setInterimText(currentInterim);
+      interimRef.current = currentInterim;
+
+      if (final) { 
+        setInput(prev => (prev + ' ' + final).trim()); 
+        setInterimText(''); 
+        interimRef.current = '';
+      }
     };
     rec.onerror = (event: any) => {
       // 'no-speech' is harmless — just means silence, keep going
       if (event.error === 'no-speech') return;
       setListening(false);
       setInterimText('');
+      interimRef.current = '';
     };
     rec.onend = () => {
       // Auto-restart if still supposed to be listening (browser stops after ~60s)
       if (recognitionRef.current === rec && listeningRef.current) {
-        try { rec.start(); } catch (_) { setListening(false); setInterimText(''); }
+        try { rec.start(); } catch (_) { setListening(false); setInterimText(''); interimRef.current = ''; }
       } else {
         setListening(false);
         setInterimText('');
+        interimRef.current = '';
       }
     };
     recognitionRef.current = rec;
@@ -219,10 +231,21 @@ export default function AIAssistant({ patientId, patientName, open, onOpenChange
 
   const stopListening = useCallback(() => {
     listeningRef.current = false;
-    recognitionRef.current?.stop();
+    
+    // If there's interim text, append it to input before stopping
+    if (interimRef.current.trim()) {
+      setInput(prev => (prev + ' ' + interimRef.current).trim());
+    }
+
+    try {
+      recognitionRef.current?.stop();
+    } catch (e) {
+      console.error('Stop error:', e);
+    }
     recognitionRef.current = null;
     setListening(false);
     setInterimText('');
+    interimRef.current = '';
   }, []);
 
   // ---- Send ---------------------------------------------------------------

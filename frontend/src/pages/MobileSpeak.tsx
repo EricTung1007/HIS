@@ -104,6 +104,7 @@ export default function MobileSpeak() {
 
   const recognitionRef = useRef<any>(null);
   const listeningRef = useRef(false);
+  const interimRef = useRef('');
 
   useEffect(() => {
     if (!id) return;
@@ -120,10 +121,12 @@ export default function MobileSpeak() {
     setErrorMsg('');
     setAiResponse(null);
     setStatus('listening');
+    setInterimText('');
+    interimRef.current = '';
 
     const rec = new SpeechRecognition();
     rec.lang = 'zh-TW';
-    rec.continuous = false; // For mobile "click and speak", single shot is often better
+    rec.continuous = false; 
     rec.interimResults = true;
     rec.maxAlternatives = 1;
 
@@ -134,16 +137,24 @@ export default function MobileSpeak() {
         if (event.results[i].isFinal) final += t;
         else interim += t;
       }
-      setInterimText(interim);
+      
+      const currentInterim = interim || final;
+      setInterimText(currentInterim);
+      interimRef.current = currentInterim;
+
       if (final) {
         setInterimText('');
+        interimRef.current = '';
         processVoice(final);
       }
     };
 
     rec.onerror = (event: any) => {
       if (event.error === 'no-speech') {
-        setStatus('idle');
+        // Only reset to idle if we didn't have any interim text
+        if (!interimRef.current) {
+          setStatus('idle');
+        }
         return;
       }
       setErrorMsg(`語音錯誤: ${event.error}`);
@@ -153,8 +164,18 @@ export default function MobileSpeak() {
     rec.onend = () => {
       setListening(false);
       listeningRef.current = false;
-      if (status === 'listening' && !interimText) {
-         setStatus('idle');
+      
+      // If the browser ends the session while we are still 'listening'
+      // it means it reached silence or timeout.
+      if (status === 'listening') {
+        if (interimRef.current.trim()) {
+          const textToProcess = interimRef.current;
+          setInterimText('');
+          interimRef.current = '';
+          processVoice(textToProcess);
+        } else {
+          setStatus('idle');
+        }
       }
     };
 
@@ -162,14 +183,29 @@ export default function MobileSpeak() {
     listeningRef.current = true;
     rec.start();
     setListening(true);
-  }, [status, interimText]);
+  }, [id, status, patient]);
 
   const stopListening = useCallback(() => {
     listeningRef.current = false;
-    recognitionRef.current?.stop();
+    
+    // Process what we have so far if it hasn't been finalized
+    if (interimRef.current.trim()) {
+      const textToProcess = interimRef.current;
+      setInterimText('');
+      interimRef.current = '';
+      processVoice(textToProcess);
+    } else if (status === 'listening') {
+      setStatus('idle');
+    }
+
+    try {
+      recognitionRef.current?.stop();
+    } catch (e) {
+      console.error('Stop error:', e);
+    }
     recognitionRef.current = null;
     setListening(false);
-  }, []);
+  }, [status]);
 
   const processVoice = async (text: string) => {
     if (!text.trim() || !id) return;
@@ -185,7 +221,7 @@ export default function MobileSpeak() {
         const synth = window.speechSynthesis;
         const utterance = new SpeechSynthesisUtterance((data as AIResponse).confirmation);
         utterance.lang = 'zh-TW';
-        utterance.rate = 1.1; // slightly faster for efficiency
+        utterance.rate = 1.1; 
         synth.speak(utterance);
       }
     } catch (err: any) {
@@ -202,7 +238,6 @@ export default function MobileSpeak() {
     try {
       await executeAction(id, aiResponse);
       setStatus('done');
-      // Auto redirect back after 2 seconds
       setTimeout(() => navigate(`/patients/${id}`), 2000);
     } catch (err: any) {
       setErrorMsg(err.message || '執行失敗');
@@ -215,6 +250,7 @@ export default function MobileSpeak() {
     setAiResponse(null);
     setErrorMsg('');
     setInterimText('');
+    interimRef.current = '';
   };
 
   if (loading) return <div className="min-h-screen flex items-center justify-center bg-gray-50 text-gray-500">載入中...</div>;

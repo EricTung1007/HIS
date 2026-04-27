@@ -19,7 +19,7 @@ export default function Sidebar({ onClose }: Props) {
           <span className="text-2xl">🏥</span>
           <div>
             <div className="font-bold text-sm leading-tight">長照資訊系統</div>
-            <div className="text-xs text-blue-300">LTC-HIS v1.0</div>
+            <div className="text-xs text-blue-300">智慧化長照管理系統</div>
           </div>
         </div>
         {/* Close button — mobile only */}

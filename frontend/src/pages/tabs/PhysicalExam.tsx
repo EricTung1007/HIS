@@ -3,7 +3,7 @@ import { Plus, Eye, Edit2, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
 import api from '../../api/client';
 import { PhysicalExam } from '../../types';
 
-const CONSCIOUSNESS_OPTS = ['清醒(Alert)', '嗜睡(Drowsy)', '模糊(Confused)', '昏睡(Stupor)', '昏迷(Coma)'];
+const CONSCIOUSNESS_OPTS = ['清醒', '嗜睡', '模糊', '昏睡', '昏迷'];
 
 function calcMorse(pe: Partial<PhysicalExam>) {
   return (pe.morse_fall_history || 0) + (pe.morse_secondary_diagnosis || 0) +
@@ -111,7 +111,7 @@ function PEFormModal({ patientId, exam, onClose, onSaved }: {
 }) {
   const [form, setForm] = useState<Partial<PhysicalExam>>(exam || {
     exam_date: new Date().toISOString().split('T')[0],
-    consciousness: 'Alert', morse_fall_history: 0, morse_secondary_diagnosis: 0,
+    consciousness: '清醒', morse_fall_history: 0, morse_secondary_diagnosis: 0,
     morse_ambulatory_aid: 0, morse_iv: 0, morse_gait: 0, morse_mental_status: 0,
     braden_sensory: 4, braden_moisture: 4, braden_activity: 4,
     braden_mobility: 4, braden_nutrition: 4, braden_friction: 3,

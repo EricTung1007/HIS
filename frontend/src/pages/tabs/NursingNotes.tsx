@@ -45,7 +45,9 @@ export default function NursingNotesTab({ patientId }: { patientId: string }) {
                 <span className="text-sm font-medium text-gray-800">
                   {new Date(note.note_datetime).toLocaleString('zh-TW', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}
                 </span>
-                <span className="badge-active text-xs">{note.note_type}</span>
+                <span className="badge-active text-xs">
+                  {note.note_type === 'SOAP' ? 'SOAP 格式' : note.note_type === 'DAR' ? 'DAR 格式' : '敘述型記錄'}
+                </span>
                 <span className="text-xs text-gray-400">撰寫：{note.created_by_name || '-'}</span>
               </div>
               <div className="flex gap-2">

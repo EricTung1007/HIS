@@ -3,8 +3,8 @@ import { Plus, Trash2, Droplets, ArrowDown, ArrowUp } from 'lucide-react';
 import api from '../../api/client';
 import { IntakeOutput } from '../../types';
 
-const INTAKE_CATS = ['oral (口服)', 'iv (靜脈輸液)', 'tube_feeding (管灌)', 'other (其他)'];
-const OUTPUT_CATS = ['urine (尿液)', 'stool (糞便)', 'emesis (嘔吐)', 'drain (引流)', 'wound (傷口引流)', 'other (其他)'];
+const INTAKE_CATS = ['口服', '靜脈輸液', '管灌', '其他'];
+const OUTPUT_CATS = ['尿液', '糞便', '嘔吐', '引流', '傷口引流', '其他'];
 
 export default function IntakeOutputTab({ patientId }: { patientId: string }) {
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
