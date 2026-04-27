@@ -219,6 +219,33 @@ db.exec(`
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (patient_id) REFERENCES patients(id)
   );
+
+  CREATE TABLE IF NOT EXISTS ltc_billing_codes (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    code TEXT UNIQUE NOT NULL,
+    name TEXT NOT NULL,
+    description TEXT,
+    price INTEGER NOT NULL,
+    remote_price INTEGER,
+    category TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
+
+  CREATE TABLE IF NOT EXISTS billing_records (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    patient_id INTEGER NOT NULL,
+    billing_code_id INTEGER NOT NULL,
+    service_date DATE NOT NULL,
+    service_time TEXT,
+    quantity INTEGER DEFAULT 1,
+    unit_price INTEGER NOT NULL,
+    is_remote BOOLEAN DEFAULT 0,
+    notes TEXT,
+    recorded_by INTEGER,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (patient_id) REFERENCES patients(id),
+    FOREIGN KEY (billing_code_id) REFERENCES ltc_billing_codes(id)
+  );
 `);
 
 module.exports = db;

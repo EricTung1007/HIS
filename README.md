@@ -1,12 +1,12 @@
 # 台灣長照資訊系統 (LTC-HIS)
 
-台灣長期照護場景之醫療資訊系統，提供完整的住民照護記錄管理功能。
+台灣長期照護場景之醫療資訊系統，提供完整的住民照護記錄管理，並內建 AI 語音護理助理。
 
 ## 功能模組
 
 | 模組 | 功能 |
 |------|------|
-| 住民管理 | 基本資料、入退住管理 |
+| 住民管理 | 基本資料、入退住管理、警告事項 |
 | 病史記錄 | 主訴、現病史、過去病史、家族史、手術史、過敏記錄、診斷管理 |
 | 用藥醫囑 | 開立醫囑、停藥管理、多種給藥途徑/頻率 |
 | 用藥記錄 (MAR) | 每日給藥記錄、給藥狀態追蹤（已給/暫停/拒絕/無藥）|
@@ -14,41 +14,78 @@
 | 生命徵象 | 血壓/心率/呼吸/體溫/血氧/體重/血糖/疼痛指數 |
 | 身體評估 (PE Sheet) | 全身系統評估、跌倒風險(Morse Fall Scale)、壓傷風險(Braden Scale) |
 | 護理記錄 | SOAP格式、DAR格式、敘述型護理記錄 |
+| AI 語音助理 | 自然語言輸入照護動作，自動寫入對應記錄 |
 
 ## 技術架構
 
 - **後端**: Node.js + Express + SQLite (better-sqlite3)
 - **前端**: React 18 + TypeScript + Vite + Tailwind CSS
 - **認證**: JWT Bearer Token
+- **AI**: OpenAI GPT-4o（或任何 OpenAI 相容 API）
+- **語音**: 瀏覽器 Web Speech API（zh-TW）
+
+---
 
 ## 快速開始
 
-### 1. 安裝依賴
+### Windows
 
-```bash
-cd backend && npm install
-cd ../frontend && npm install
+**1. 安裝 Node.js**（若尚未安裝）
+前往 https://nodejs.org 下載 LTS 版本並安裝。
+
+**2. 下載專案**
+```powershell
+git clone <repo-url>
+cd HIS
 ```
 
-### 2. 建立測試資料
-
-```bash
-cd backend && npm run seed
+**3. 安裝依賴**
+```powershell
+cd backend
+npm install
+cd ..\frontend
+npm install
 ```
 
-### 3. 啟動服務
+**4. 建立測試資料**
+```powershell
+cd ..\backend
+node src/seed.js
+```
+
+**5. 啟動後端**（開一個終端機視窗）
+```powershell
+cd backend
+node src/server.js
+```
+看到 `Server running on port 3001` 即成功。
+
+**6. 啟動前端**（開另一個終端機視窗）
+```powershell
+cd frontend
+npm run dev
+```
+看到 `Local: http://localhost:3000/` 即成功。
+
+**7. 開啟瀏覽器**（建議使用 Chrome 或 Edge）
+```
+http://localhost:3000
+```
+
+### macOS / Linux
 
 ```bash
-# 後端 (Port 3001)
-cd backend && npm run dev
-
-# 前端 (Port 3000)
+cd backend && npm install && cd ../frontend && npm install
+cd ../backend && node src/seed.js
+# Terminal 1
+cd backend && node src/server.js
+# Terminal 2
 cd frontend && npm run dev
 ```
 
-### 4. 登入系統
+---
 
-開啟瀏覽器至 http://localhost:3000
+## 測試帳號
 
 | 帳號 | 密碼 | 角色 |
 |------|------|------|
@@ -57,40 +94,100 @@ cd frontend && npm run dev
 | nurse2 | nurse123 | 護理師 |
 | doctor1 | doctor123 | 醫師 |
 
+---
+
+## 手機／行動裝置存取
+
+在同一個網路下（例如手機開熱點，電腦連接）：
+
+1. 電腦執行 `ipconfig`（Windows）或 `ifconfig`（Mac/Linux）找到 Wi-Fi IP
+2. 手機瀏覽器開啟 `http://<電腦IP>:3000`
+3. 語音功能需使用 **Android Chrome** 或 **iOS Safari**
+
+若連線失敗，以系統管理員身分在 PowerShell 執行：
+```powershell
+netsh advfirewall firewall add rule name="HIS" dir=in action=allow protocol=TCP localport=3000-3001 profile=any
+```
+
+---
+
+## AI 語音助理設定
+
+### 使用 OpenAI（付費 API）
+
+1. 前往 https://platform.openai.com/api-keys 取得 API Key
+2. 登入系統後點選左側選單「系統設定」
+3. 輸入 API Key，選擇模型（建議 `gpt-4o` 或省錢用 `gpt-4o-mini`）
+4. 點「套用設定」
+
+### 使用本地 LLM（免費，需自行安裝）
+
+**Ollama**（推薦）：
+```bash
+# 安裝 Ollama: https://ollama.com
+ollama pull llama3
+ollama serve
+```
+設定頁面填入：
+- API Key：`ollama`（任意字串）
+- API 端點：`http://localhost:11434/v1`
+- 模型：`llama3`
+
+**LM Studio**：
+- 下載 https://lmstudio.ai，載入模型後啟動本地伺服器
+- API 端點：`http://localhost:1234/v1`
+
+### 環境變數（正式部署）
+
+```bash
+OPENAI_API_KEY=sk-...
+OPENAI_BASE_URL=http://localhost:11434/v1   # 選填
+OPENAI_MODEL=gpt-4o                         # 選填
+node src/server.js
+```
+
+---
+
 ## API 端點
 
 ```
-POST   /api/auth/login              登入
-GET    /api/auth/me                 取得目前使用者
+POST   /api/auth/login
+GET    /api/auth/me
 
-GET    /api/patients                住民列表
-POST   /api/patients                新增住民
-GET    /api/patients/:id            住民資料
-PUT    /api/patients/:id            更新住民資料
+GET    /api/patients
+POST   /api/patients
+GET    /api/patients/:id
+PUT    /api/patients/:id
 
-GET    /api/patients/:id/history    病史記錄
-PUT    /api/patients/:id/history    更新病史
-POST   /api/patients/:id/history/diagnoses   新增診斷
-POST   /api/patients/:id/history/allergies   新增過敏
+GET    /api/patients/:id/history
+PUT    /api/patients/:id/history
+POST   /api/patients/:id/history/diagnoses
+POST   /api/patients/:id/history/allergies
 
-GET    /api/patients/:id/medications         用藥醫囑
-POST   /api/patients/:id/medications         新增醫囑
-GET    /api/patients/:id/mar                 MAR記錄
-POST   /api/patients/:id/mar                 記錄給藥
+GET    /api/patients/:id/medications
+POST   /api/patients/:id/medications
+GET    /api/patients/:id/mar
+POST   /api/patients/:id/mar
 
-GET    /api/patients/:id/io                  出入量記錄
-POST   /api/patients/:id/io                  新增出入量
-GET    /api/patients/:id/vitals              生命徵象
-POST   /api/patients/:id/vitals              新增生命徵象
-GET    /api/patients/:id/pe                  身體評估
-POST   /api/patients/:id/pe                  新增身體評估
-GET    /api/patients/:id/notes               護理記錄
-POST   /api/patients/:id/notes               新增護理記錄
+GET    /api/patients/:id/io
+POST   /api/patients/:id/io
+GET    /api/patients/:id/vitals
+POST   /api/patients/:id/vitals
+GET    /api/patients/:id/pe
+POST   /api/patients/:id/pe
+GET    /api/patients/:id/notes
+POST   /api/patients/:id/notes
+
+GET    /api/ai/status
+POST   /api/ai/config
+POST   /api/patients/:id/ai/chat
 ```
+
+---
 
 ## 適用場景
 
 - 護理之家 (Nursing Home)
 - 老人福利機構
 - 長期照護中心
-- 社區型日照中心 (延伸應用)
+- 社區型日照中心（延伸應用）

@@ -11,6 +11,7 @@ import IntakeOutputTab from './tabs/IntakeOutput';
 import VitalSignsTab from './tabs/VitalSigns';
 import PhysicalExamTab from './tabs/PhysicalExam';
 import NursingNotesTab from './tabs/NursingNotes';
+import BillingTab from './tabs/BillingTab';
 
 const TABS = [
   { id: 'history', label: '病史記錄' },
@@ -20,6 +21,7 @@ const TABS = [
   { id: 'vitals', label: '生命徵象' },
   { id: 'pe', label: '身體評估' },
   { id: 'notes', label: '護理記錄' },
+  { id: 'billing', label: '💰 核銷碼' },
 ];
 
 function calcAge(birth: string) {
@@ -161,6 +163,7 @@ export default function PatientDetail() {
           {activeTab === 'vitals' && <VitalSignsTab patientId={id!} />}
           {activeTab === 'pe' && <PhysicalExamTab patientId={id!} />}
           {activeTab === 'notes' && <NursingNotesTab patientId={id!} />}
+          {activeTab === 'billing' && <BillingTab patientId={id!} patientName={patient.name} />}
         </div>
       </div>
 

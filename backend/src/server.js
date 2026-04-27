@@ -18,6 +18,8 @@ app.use('/api/patients/:pid/pe', require('./routes/physical-exam'));
 app.use('/api/patients/:pid/notes', require('./routes/nursing-notes'));
 app.use('/api/patients/:pid/ai', require('./routes/ai'));
 app.use('/api/ai', require('./routes/ai'));
+app.use('/api/billing', require('./routes/billing'));
+app.use('/api/patients/:pid/billing', require('./routes/billing'));
 
 app.get('/api/health', (req, res) => res.json({ status: 'ok', system: '台灣長照HIS系統' }));
 

@@ -1,9 +1,10 @@
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Users, Settings, X } from 'lucide-react';
+import { LayoutDashboard, Users, Settings, X, Receipt } from 'lucide-react';
 
 const navItems = [
   { to: '/dashboard', icon: LayoutDashboard, label: '儀表板' },
   { to: '/patients', icon: Users, label: '住民管理' },
+  { to: '/billing', icon: Receipt, label: '核銷管理' },
 ];
 
 interface Props {
