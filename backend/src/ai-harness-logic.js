@@ -4,9 +4,24 @@
  */
 
 const buildSystemPrompt = (ctx) => {
-  const { patient, meds, billingCodes } = ctx;
+  const { patient, meds, billingCodes, latestVitals, ioToday, todayNotes } = ctx;
   const medList = meds.map(m => m.medication_name).join(',');
   const billingList = (billingCodes || []).map(c => `${c.code}:${c.name}`).join('|');
+  
+  let vitalsStr = '無';
+  if (latestVitals) {
+    vitalsStr = `血壓:${latestVitals.systolic_bp}/${latestVitals.diastolic_bp}, 心跳:${latestVitals.heart_rate}, 體溫:${latestVitals.temperature}`;
+  }
+  
+  let ioStr = '無';
+  if (ioToday && ioToday.length > 0) {
+    ioStr = ioToday.map(io => `${io.type}:${io.total}cc`).join(', ');
+  }
+
+  let notesStr = '無';
+  if (todayNotes && todayNotes.length > 0) {
+    notesStr = todayNotes.map(n => `- ${n.content}`).join('\n');
+  }
 
   return `### ACTION MENU (Pick ONE):
 - vital_signs
@@ -21,9 +36,10 @@ const buildSystemPrompt = (ctx) => {
 - add_allergy
 - add_diagnosis
 - physical_exam
+- query
 
 ### JSON TEMPLATE:
-{"understanding":"","action":"","data":{},"confirmation":"","needs_confirm":false}
+{"understanding":"","action":"","data":{},"confirmation":"","answer":"","needs_confirm":false}
 
 ### MAPPING (Semantic Action Description -> Action {fields}):
 - 攝入紀錄 (如飲水、進食、管灌、靜脈注射等) -> intake {category:"口服"|"管灌"|"點滴", amount:N}
@@ -38,19 +54,28 @@ const buildSystemPrompt = (ctx) => {
 - 新增過敏紀錄 (如對藥物或食物過敏及反應) -> add_allergy {allergen:"", reaction:"", severity:"mild"|"moderate"|"severe"}
 - 新增疾病診斷 (如醫師確診的疾病) -> add_diagnosis {icd_code:"", description:""}
 - 身體評估紀錄 (如意識狀態、GCS、傷口與壓瘡等身體檢查) -> physical_exam {additional_notes:"", gcs_eye:N, gcs_verbal:N, gcs_motor:N}
-- 系統資訊查詢 (詢問數值或歷史紀錄) -> query {content:""}
+- 系統資訊查詢 (詢問個案狀況、數值或歷史紀錄) -> query {} (IMPORTANT: You MUST write the detailed response containing the actual data from the CONTEXT directly into the "answer" field. DO NOT say "已查詢", give the specific numbers and notes!)
 
 ### CONTEXT:
 住民:${patient.name}, 床號:${patient.room_no}-${patient.bed_no}
 用藥醫囑:${medList}
+最新生命徵象:${vitalsStr}
+今日輸出入量:${ioStr}
+今日護理紀錄:\n${notesStr}
 核銷代碼:${billingList}
 
 ### EXAMPLES:
 User: "喝水200cc"
-Assistant: {"understanding":"住民喝水200cc","action":"intake","data":{"category":"口服","amount":200},"confirmation":"已記錄口服200cc","needs_confirm":false}
+Assistant: {"understanding":"住民喝水200cc","action":"intake","data":{"category":"口服","amount":200},"confirmation":"已記錄口服200cc","answer":"","needs_confirm":false}
 
 User: "血壓130/85"
-Assistant: {"understanding":"量測血壓","action":"vital_signs","data":{"systolic_bp":130,"diastolic_bp":85},"confirmation":"已記錄血壓130/85","needs_confirm":false}
+Assistant: {"understanding":"量測血壓","action":"vital_signs","data":{"systolic_bp":130,"diastolic_bp":85},"confirmation":"已記錄血壓130/85","answer":"","needs_confirm":false}
+
+User: "阿嬤今天有喝水嗎？"
+Assistant: {"understanding":"查詢今日攝入量","action":"query","data":{},"confirmation":"","answer":"阿嬤今天喝了 200cc 的水。","needs_confirm":false}
+
+User: "目前狀況"
+Assistant: {"understanding":"查詢個案目前狀況","action":"query","data":{},"confirmation":"","answer":"最新生命徵象為血壓130/85、心跳78。今日輸出入量包含點滴500cc。護理紀錄顯示目前情緒穩定。","needs_confirm":false}
 
 ### RULES:
 1. ONLY JSON.

@@ -13,40 +13,47 @@ interface Props {
 export default function TopBar({ onMenuClick }: Props) {
   const { user, logout } = useAuth();
   return (
-    <header className="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between shrink-0 gap-3">
+    <header className="bg-white/80 backdrop-blur-md border-b border-slate-200/60 px-5 py-3.5 flex items-center justify-between shrink-0 gap-3 sticky top-0 z-40">
       {/* Hamburger — visible on mobile only */}
       <button
         onClick={onMenuClick}
-        className="lg:hidden text-gray-500 hover:text-gray-700 p-1 -ml-1 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-300"
+        className="lg:hidden text-slate-500 hover:text-slate-800 p-1.5 -ml-1.5 rounded-lg hover:bg-slate-100 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
         aria-label="開啟選單"
       >
-        <Menu size={22} />
+        <Menu size={20} />
       </button>
 
-      <div className="hidden sm:block text-sm text-gray-500 truncate">
+      <div className="hidden sm:block text-sm font-medium text-slate-500 tracking-wide">
         {new Date().toLocaleDateString('zh-TW', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
       </div>
 
-      <div className="flex items-center gap-3 ml-auto">
-        <Link
-          to="/caretaker"
-          className="flex items-center gap-1.5 text-sm text-white bg-blue-600 hover:bg-blue-700 px-3 py-1.5 rounded-full transition-colors mr-1 sm:mr-2 shadow-sm"
-        >
-          <Mic size={15} />
-          <span className="hidden sm:inline font-medium">語音助手</span>
-        </Link>
-        <div className="flex items-center gap-1.5 text-sm text-gray-700 border-l border-gray-200 pl-3">
-          <User size={15} className="text-gray-400 shrink-0" />
-          <span className="font-medium truncate max-w-[100px] sm:max-w-none">{user?.name}</span>
-          <span className="text-gray-400 text-xs hidden sm:inline">
-            ({roleLabel[user?.role || ''] || user?.role})
-          </span>
+      <div className="flex items-center gap-5 ml-auto">
+        {/* Prominent Hero Button for Voice Assistant */}
+        <div className="relative group">
+          <div className="absolute -inset-0.5 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full blur opacity-60 group-hover:opacity-80 transition duration-500 animate-pulse"></div>
+          <Link
+            to="/caretaker"
+            className="relative flex items-center gap-2 text-sm sm:text-base font-bold text-white bg-slate-900 hover:bg-slate-800 px-4 py-2 sm:px-6 sm:py-2.5 rounded-full transition-all duration-300 shadow-md border border-slate-700"
+          >
+            <Mic size={18} className="text-indigo-400" />
+            <span className="tracking-wide whitespace-nowrap">AI 語音助手</span>
+          </Link>
+        </div>
+        
+        <div className="flex items-center gap-3 text-sm text-slate-700 border-l border-slate-200/60 pl-5">
+          <div className="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center border border-slate-200 shrink-0">
+            <User size={16} className="text-slate-500" />
+          </div>
+          <div className="hidden sm:block">
+            <div className="font-semibold leading-none">{user?.name}</div>
+            <div className="text-[11px] text-slate-400 mt-0.5 font-medium">{roleLabel[user?.role || ''] || user?.role}</div>
+          </div>
         </div>
         <button
           onClick={logout}
-          className="flex items-center gap-1 text-sm text-gray-500 hover:text-red-600 transition-colors whitespace-nowrap ml-2"
+          className="flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-rose-600 hover:bg-rose-50 px-3 py-1.5 rounded-lg transition-colors ml-1"
         >
-          <LogOut size={15} />
+          <LogOut size={16} />
           <span className="hidden sm:inline">登出</span>
         </button>
       </div>

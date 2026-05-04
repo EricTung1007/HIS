@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, User, Calendar, Phone, AlertTriangle, Edit2, Mic } from 'lucide-react';
+import { ArrowLeft, User, Calendar, Phone, AlertTriangle, Edit2, Mic, Bot } from 'lucide-react';
 import api from '../api/client';
 import { Patient } from '../types';
 import AIAssistant from '../components/AIAssistant';
@@ -65,11 +65,11 @@ export default function PatientDetail() {
       </div>
 
       {/* Patient Header */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+      <div className="bg-white rounded-xl shadow-sm border border-slate-200/60 p-5">
         {/* Top row: avatar + name/badges + action buttons */}
-        <div className="flex items-center justify-between gap-3 mb-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
           <div className="flex items-center gap-3 min-w-0">
-            <div className={`w-12 h-12 rounded-full flex items-center justify-center text-white text-xl font-bold shrink-0 ${patient.gender === 'F' ? 'bg-pink-400' : 'bg-blue-500'}`}>
+            <div className={`w-12 h-12 rounded-full flex items-center justify-center text-white text-xl font-bold shrink-0 shadow-sm ${patient.gender === 'F' ? 'bg-rose-400' : 'bg-indigo-400'}`}>
               {patient.name[0]}
             </div>
             <div className="min-w-0">
@@ -84,28 +84,19 @@ export default function PatientDetail() {
             </div>
           </div>
           {/* Action buttons — shrink-0 so they never collapse */}
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-2.5 shrink-0 w-full sm:w-auto mt-3 sm:mt-0">
             <button
-              onClick={() => navigate(`/mobile-speak/${id}`)}
-              className="flex items-center gap-1.5 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg px-3 py-2 shadow-sm transition-colors whitespace-nowrap sm:hidden"
-              title="手機錄音模式"
+              onClick={() => setShowEdit(true)}
+              className="flex items-center justify-center gap-1.5 text-sm font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl px-4 py-3 sm:py-2.5 transition-colors whitespace-nowrap flex-1 sm:flex-none border border-slate-200"
             >
-              <Mic size={15} />
-              <span>快速錄音</span>
+              <Edit2 size={16} /><span>編輯</span>
             </button>
             <button
               onClick={() => setAiOpen(true)}
-              className="flex items-center gap-1.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg px-3 py-2 shadow-sm transition-colors whitespace-nowrap"
+              className="flex items-center justify-center gap-2 text-base sm:text-sm font-bold text-emerald-900 bg-emerald-100 hover:bg-emerald-200 rounded-xl px-5 py-3 sm:py-2.5 shadow-sm transition-all duration-300 whitespace-nowrap border border-emerald-200 flex-1 sm:flex-none sm:w-auto w-full"
             >
-              <Mic size={15} />
-              <span className="hidden sm:inline">AI 語音助理</span>
-              <span className="sm:hidden">對話模式</span>
-            </button>
-            <button
-              onClick={() => setShowEdit(true)}
-              className="flex items-center gap-1 text-xs text-gray-500 hover:text-blue-600 border border-gray-200 hover:border-blue-300 rounded-md px-2 py-2 transition-colors whitespace-nowrap"
-            >
-              <Edit2 size={12} /><span className="hidden sm:inline"> 編輯</span>
+              <Bot size={18} className="text-emerald-600" />
+              <span>對話式助理</span>
             </button>
           </div>
         </div>

@@ -236,11 +236,11 @@ export default function FamilyLogTab({ patientId }: { patientId: string }) {
             </div>
           </div>
 
-          <div className="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl p-5 text-white shadow-xl shadow-indigo-100">
-            <h4 className="font-bold text-sm mb-2 flex items-center gap-2">
-              <Sparkles size={16} /> AI 智慧助手
+          <div className="bg-slate-900 rounded-2xl p-6 text-slate-100 shadow-lg shadow-slate-900/10 border border-slate-800">
+            <h4 className="font-bold text-sm mb-2.5 flex items-center gap-2 text-white tracking-wide">
+              <Sparkles size={16} className="text-indigo-400" /> AI 智慧助手
             </h4>
-            <p className="text-xs text-indigo-100 leading-relaxed opacity-90">
+            <p className="text-xs text-slate-400 leading-relaxed font-medium">
               AI 會自動分析今日所有的護理記錄、生命徵象與用藥情況，轉化為家屬易於理解的文字，節省護理人員撰寫聯絡簿的時間。
             </p>
           </div>

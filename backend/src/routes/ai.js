@@ -45,7 +45,11 @@ function buildPatientContext(pid) {
      ORDER BY code LIMIT 60`
   ).all();
 
-  return { patient, meds, latestVitals, ioToday, billingCodes };
+  const todayNotes = db.prepare(
+    "SELECT content, created_at FROM nursing_notes WHERE patient_id = ? AND date(created_at) = ? ORDER BY created_at ASC"
+  ).all(pid, today);
+
+  return { patient, meds, latestVitals, ioToday, billingCodes, todayNotes };
 }
 
 const { buildSystemPrompt, repairJson } = require('../ai-harness-logic');
@@ -111,7 +115,11 @@ router.post('/chat', async (req, res) => {
     let rawText = '{}';
     
     if (model.toLowerCase().includes('qwen')) {
-      const rawPrompt = `<|im_start|>system\n${buildSystemPrompt(ctx)}\n<|im_end|>\n<|im_start|>user\n使用者問題：\n${message}\n<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n`;
+      let historyStr = '';
+      for (const h of historyMessages) {
+        historyStr += `<|im_start|>${h.role}\n${h.content}\n<|im_end|>\n`;
+      }
+      const rawPrompt = `<|im_start|>system\n${buildSystemPrompt(ctx)}\n<|im_end|>\n${historyStr}<|im_start|>user\n使用者問題：\n${message}\n<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n`;
       
       try {
         completion = await client.completions.create({
@@ -168,6 +176,10 @@ router.post('/chat', async (req, res) => {
       const orders = db.prepare("SELECT id, medication_name FROM medication_orders WHERE patient_id = ? AND status = 'active'").all(pid);
       const matched = orders.find(o => o.medication_name.toLowerCase().includes(medName) || medName.includes(o.medication_name.toLowerCase().split(' ')[0]));
       if (matched) parsed.data.order_id = matched.id;
+    }
+
+    if (parsed.action === 'query' && parsed.answer) {
+      parsed.confirmation = parsed.answer;
     }
 
     res.json(parsed);

@@ -13,58 +13,63 @@ interface Props {
 
 export default function Sidebar({ onClose }: Props) {
   return (
-    <div className="w-56 h-full bg-blue-900 text-white flex flex-col">
-      <div className="px-4 py-5 border-b border-blue-800 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <span className="text-2xl">🏥</span>
+    <div className="w-56 h-full bg-slate-900 text-slate-100 flex flex-col border-r border-slate-800">
+      <div className="px-5 py-6 border-b border-white/5 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-indigo-500/20 flex items-center justify-center border border-indigo-500/30">
+            <span className="text-xl">🏥</span>
+          </div>
           <div>
-            <div className="font-bold text-sm leading-tight">長照資訊系統</div>
-            <div className="text-xs text-blue-300">智慧化長照管理系統</div>
+            <div className="font-bold text-sm leading-tight tracking-wide">長照資訊系統</div>
+            <div className="text-[10px] text-slate-400 font-medium uppercase tracking-wider mt-0.5">HIS System</div>
           </div>
         </div>
         {/* Close button — mobile only */}
         {onClose && (
-          <button onClick={onClose} className="lg:hidden text-blue-300 hover:text-white p-1">
+          <button onClick={onClose} className="lg:hidden text-slate-400 hover:text-white p-1 transition-colors">
             <X size={18} />
           </button>
         )}
       </div>
 
-      <nav className="flex-1 px-2 py-4 space-y-1">
+      <nav className="flex-1 px-3 py-6 space-y-1">
         {navItems.map(item => (
           <NavLink
             key={item.to}
             to={item.to}
             onClick={onClose}
             className={({ isActive }) =>
-              `flex items-center gap-3 px-3 py-2.5 rounded-md text-sm transition-colors ${
-                isActive ? 'bg-blue-700 text-white' : 'text-blue-200 hover:bg-blue-800 hover:text-white'
+              `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all duration-200 font-medium ${
+                isActive ? 'bg-indigo-600/10 text-indigo-400 shadow-sm' : 'text-slate-400 hover:bg-white/5 hover:text-slate-200'
               }`
             }
           >
-            <item.icon size={17} />
+            <item.icon size={18} />
             <span>{item.label}</span>
           </NavLink>
         ))}
       </nav>
 
-      <div className="px-2 pb-4">
+      <div className="px-3 pb-6">
         <NavLink
           to="/settings"
           onClick={onClose}
           className={({ isActive }) =>
-            `flex items-center gap-3 px-3 py-2.5 rounded-md text-sm transition-colors ${
-              isActive ? 'bg-blue-700 text-white' : 'text-blue-300 hover:bg-blue-800 hover:text-white'
+            `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all duration-200 font-medium ${
+              isActive ? 'bg-indigo-600/10 text-indigo-400 shadow-sm' : 'text-slate-400 hover:bg-white/5 hover:text-slate-200'
             }`
           }
         >
-          <Settings size={17} />
-          <span>AI 設定</span>
+          <Settings size={18} />
+          <span>系統設定</span>
         </NavLink>
       </div>
 
-      <div className="px-4 py-3 border-t border-blue-800">
-        <div className="text-xs text-blue-400">台灣長照照護機構</div>
+      <div className="px-5 py-4 border-t border-white/5">
+        <div className="flex items-center gap-2">
+          <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)] animate-pulse"></div>
+          <div className="text-[11px] text-slate-500 font-medium">系統連線正常</div>
+        </div>
       </div>
     </div>
   );

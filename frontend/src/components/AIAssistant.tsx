@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { Mic, MicOff, Send, X, Bot, Loader2, CheckCircle, AlertCircle, Volume2, Settings, ChevronDown } from 'lucide-react';
+import { Mic, MicOff, Send, X, Bot, Loader2, CheckCircle, AlertCircle, Volume2, Settings, ChevronDown, Sparkles } from 'lucide-react';
 import api from '../api/client';
 
 // ---- Types ----------------------------------------------------------------
@@ -334,34 +334,36 @@ export default function AIAssistant({ patientId, patientName, open, onOpenChange
 
   // ---- Render -------------------------------------------------------------
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-end sm:items-end sm:justify-end p-0 sm:p-4">
+    <div className="fixed inset-0 z-[60] flex items-end justify-end sm:items-end sm:justify-end p-0 sm:p-6 font-sans pointer-events-none">
       {/* Backdrop (mobile full-screen) */}
-      <div className="absolute inset-0 bg-black/40 sm:hidden" onClick={() => onOpenChange(false)} />
+      <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm sm:hidden transition-opacity pointer-events-auto" onClick={() => onOpenChange(false)} />
 
       {/* Panel */}
-      <div className="relative z-10 w-full sm:w-[420px] bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl border border-gray-200 flex flex-col"
-        style={{ height: '85vh', maxHeight: '680px' }}>
+      <div className="relative z-10 w-full sm:w-[380px] bg-white rounded-t-3xl sm:rounded-3xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.3)] border border-slate-200/60 flex flex-col overflow-hidden pointer-events-auto"
+        style={{ height: '75vh', maxHeight: '600px' }}>
 
         {/* Header */}
-        <div className="flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-blue-600 to-blue-700 rounded-t-2xl shrink-0">
-          <div className="w-9 h-9 bg-white/20 rounded-full flex items-center justify-center">
-            <Bot size={20} className="text-white" />
+        <div className="flex items-center gap-4 px-5 py-4 bg-slate-900 shrink-0 border-b border-slate-800">
+          <div className="w-10 h-10 bg-emerald-500/20 rounded-xl flex items-center justify-center border border-emerald-500/30">
+            <Bot size={22} className="text-emerald-400" />
           </div>
           <div className="flex-1 min-w-0">
-            <div className="text-white font-semibold text-sm">AI 語音護理助理</div>
-            <div className="text-blue-200 text-xs truncate">住民：{patientName}</div>
+            <div className="text-white font-bold text-sm tracking-wide">對話式助理</div>
+            <div className="text-slate-400 text-xs truncate mt-0.5 font-medium flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> 住民：{patientName}
+            </div>
           </div>
-          <button onClick={() => onOpenChange(false)} className="text-white/70 hover:text-white p-1 rounded">
+          <button onClick={() => onOpenChange(false)} className="text-slate-400 hover:text-white hover:bg-white/10 p-1.5 rounded-lg transition-colors">
             <X size={20} />
           </button>
         </div>
 
         {/* API Key warning */}
         {showKeyWarning && (
-          <div className="bg-amber-50 border-b border-amber-200 px-4 py-2 flex items-center gap-2 shrink-0">
-            <AlertCircle size={14} className="text-amber-600 shrink-0" />
-            <span className="text-xs text-amber-700 flex-1">尚未設定 OpenAI API Key</span>
-            <a href="/settings" className="text-xs text-blue-600 underline whitespace-nowrap" onClick={() => onOpenChange(false)}>
+          <div className="bg-rose-50/80 border-b border-rose-100 px-5 py-2.5 flex items-center gap-2.5 shrink-0">
+            <AlertCircle size={15} className="text-rose-600 shrink-0" />
+            <span className="text-xs font-medium text-rose-800 flex-1">尚未設定 OpenAI API Key</span>
+            <a href="/settings" className="text-xs font-bold text-rose-600 hover:text-rose-700 whitespace-nowrap" onClick={() => onOpenChange(false)}>
               前往設定 →
             </a>
           </div>
@@ -369,9 +371,9 @@ export default function AIAssistant({ patientId, patientName, open, onOpenChange
 
         {/* STT not supported warning */}
         {!sttSupported && (
-          <div className="bg-gray-50 border-b border-gray-200 px-4 py-2 flex items-center gap-2 shrink-0">
-            <MicOff size={13} className="text-gray-400 shrink-0" />
-            <span className="text-xs text-gray-500">此瀏覽器不支援語音輸入，請改用 Safari（iOS）或 Chrome</span>
+          <div className="bg-slate-50 border-b border-slate-200 px-5 py-2.5 flex items-center gap-2.5 shrink-0">
+            <MicOff size={14} className="text-slate-400 shrink-0" />
+            <span className="text-xs font-medium text-slate-500">此瀏覽器不支援語音輸入，請改用 Safari 或 Chrome</span>
           </div>
         )}
 
@@ -379,49 +381,52 @@ export default function AIAssistant({ patientId, patientName, open, onOpenChange
         <HowToUseBar />
 
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto px-3 py-3 space-y-3">
+        <div className="flex-1 overflow-y-auto px-4 py-5 space-y-5 bg-slate-50/50">
           {messages.map((msg, idx) => (
-            <div key={idx}>
+            <div key={idx} className="animate-in fade-in slide-in-from-bottom-2 duration-300">
               {msg.role === 'system' && (
-                <div className="bg-blue-50 border border-blue-100 rounded-xl px-3 py-2.5 text-xs text-blue-700 whitespace-pre-wrap leading-relaxed">
+                <div className="bg-indigo-50/80 border border-indigo-100/60 rounded-2xl p-4 text-xs text-indigo-900 whitespace-pre-wrap leading-relaxed shadow-sm">
+                  <div className="font-bold text-indigo-700 mb-2 flex items-center gap-1.5"><Sparkles size={14}/> 系統提示</div>
                   {msg.text}
                 </div>
               )}
               {msg.role === 'user' && (
                 <div className="flex justify-end">
-                  <div className="bg-blue-600 text-white rounded-2xl rounded-tr-sm px-3.5 py-2 text-sm max-w-[82%] leading-relaxed">
+                  <div className="bg-slate-900 text-white rounded-2xl rounded-tr-sm px-4 py-2.5 text-sm max-w-[85%] leading-relaxed shadow-sm">
                     {msg.text}
                   </div>
                 </div>
               )}
               {msg.role === 'assistant' && (
-                <div className="space-y-1.5 max-w-[88%]">
+                <div className="space-y-2 max-w-[90%]">
                   {msg.response?.understanding && (
-                    <div className="text-xs text-gray-400 pl-1 italic">"{msg.response.understanding}"</div>
+                    <div className="text-[11px] text-slate-400 pl-1.5 italic font-medium flex items-center gap-1.5">
+                      <Bot size={12}/> 解析："{msg.response.understanding}"
+                    </div>
                   )}
                   {msg.response && msg.response.action !== 'unknown' && (
-                    <span className={`inline-flex items-center text-xs px-2 py-0.5 rounded-full border font-medium ${ACTION_COLORS[msg.response.action] || 'bg-gray-50 border-gray-200 text-gray-600'}`}>
+                    <span className={`inline-flex items-center text-[11px] px-2.5 py-0.5 rounded-full border font-bold shadow-sm ${ACTION_COLORS[msg.response.action] || 'bg-slate-100 border-slate-200 text-slate-600'}`}>
                       {ACTION_LABELS[msg.response.action] || msg.response.action}
                     </span>
                   )}
-                  <div className={`rounded-2xl rounded-tl-sm px-3.5 py-2 text-sm leading-relaxed ${
-                    msg.status === 'error' ? 'bg-red-50 text-red-700 border border-red-200' : 'bg-gray-100 text-gray-800'
+                  <div className={`rounded-2xl rounded-tl-sm px-4 py-3 text-sm leading-relaxed shadow-sm border ${
+                    msg.status === 'error' ? 'bg-rose-50 text-rose-900 border-rose-200' : 'bg-white text-slate-800 border-slate-200/60'
                   }`}>
                     {msg.text}
-                    {msg.status === 'done' && (
-                      <div className="flex items-center gap-1 text-green-600 text-xs mt-1.5 font-medium">
-                        <CheckCircle size={12} /> 已成功寫入系統記錄
+                    {msg.status === 'done' && msg.response?.action !== 'query' && msg.response?.action !== 'unknown' && (
+                      <div className="flex items-center gap-1.5 text-emerald-600 text-xs mt-2 font-bold bg-emerald-50 w-fit px-2 py-1 rounded-md">
+                        <CheckCircle size={14} /> 已成功寫入系統
                       </div>
                     )}
                   </div>
                   {msg.status === 'pending' && msg.response && msg.response.action !== 'query' && msg.response.action !== 'unknown' && (
-                    <div className="flex gap-2 pl-1 pt-1">
+                    <div className="flex gap-2 pl-1 pt-1.5">
                       <button onClick={() => confirmAction(msg, idx)}
-                        className="text-xs bg-green-600 text-white px-3 py-1.5 rounded-full hover:bg-green-700 flex items-center gap-1 font-medium">
-                        <CheckCircle size={11} /> 確認執行
+                        className="text-xs bg-indigo-600 text-white px-4 py-2 rounded-xl hover:bg-indigo-700 flex items-center gap-1.5 font-bold shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5">
+                        <CheckCircle size={14} /> 確認執行
                       </button>
                       <button onClick={() => setMessages(prev => prev.map((m, i) => i === idx ? { ...m, status: 'error', text: '已取消' } : m))}
-                        className="text-xs bg-gray-200 text-gray-600 px-3 py-1.5 rounded-full hover:bg-gray-300">
+                        className="text-xs bg-white text-slate-600 border border-slate-200 px-4 py-2 rounded-xl hover:bg-slate-50 hover:text-slate-900 font-semibold shadow-sm transition-colors">
                         取消
                       </button>
                     </div>
@@ -432,14 +437,14 @@ export default function AIAssistant({ patientId, patientName, open, onOpenChange
           ))}
 
           {processing && (
-            <div className="flex items-center gap-2 text-sm text-gray-400 pl-1">
-              <Loader2 size={14} className="animate-spin" />
+            <div className="flex items-center gap-2.5 text-sm text-indigo-500 font-medium pl-1.5 animate-pulse">
+              <Loader2 size={16} className="animate-spin" />
               <span>AI 分析中...</span>
             </div>
           )}
           {interimText && (
             <div className="flex justify-end">
-              <div className="bg-blue-100 text-blue-500 rounded-2xl rounded-tr-sm px-3.5 py-2 text-sm max-w-[82%] italic opacity-80">
+              <div className="bg-slate-100 text-slate-500 rounded-2xl rounded-tr-sm px-4 py-2.5 text-sm max-w-[85%] italic opacity-70 border border-slate-200 border-dashed">
                 {interimText}...
               </div>
             </div>
@@ -448,47 +453,54 @@ export default function AIAssistant({ patientId, patientName, open, onOpenChange
         </div>
 
         {/* Quick examples */}
-        <div className="px-3 pt-2 flex gap-1.5 flex-wrap shrink-0">
+        <div className="px-4 pt-3 pb-1 flex gap-2 flex-wrap shrink-0 bg-white">
           {EXAMPLES.map(ex => (
             <button key={ex.label} onClick={() => sendMessage(ex.text)} disabled={processing}
-              className="text-xs bg-gray-100 hover:bg-blue-50 hover:text-blue-700 text-gray-600 border border-gray-200 hover:border-blue-200 px-2 py-1 rounded-full transition-colors disabled:opacity-40">
+              className="text-xs font-medium bg-slate-50 hover:bg-indigo-50 text-slate-600 hover:text-indigo-700 border border-slate-200 hover:border-indigo-200 px-3 py-1.5 rounded-full transition-all duration-200 disabled:opacity-40">
               {ex.label}
             </button>
           ))}
         </div>
 
         {/* Input */}
-        <div className="border-t border-gray-100 p-3 shrink-0">
+        <div className="p-4 shrink-0 bg-white rounded-b-3xl">
           {listening && (
-            <div className="flex items-center gap-2 text-xs text-red-500 mb-2 animate-pulse font-medium">
-              <Volume2 size={13} /> 正在聆聽，請說話...
+            <div className="flex items-center gap-2 text-xs text-rose-500 mb-2.5 animate-pulse font-bold bg-rose-50 w-fit px-2 py-1 rounded-md">
+              <Volume2 size={14} /> 正在聆聽，請說話...
             </div>
           )}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2.5 relative">
             {sttSupported ? (
               <button onClick={listening ? stopListening : startListening} disabled={processing}
-                className={`flex-shrink-0 w-11 h-11 rounded-full flex items-center justify-center transition-all font-medium
-                  ${listening ? 'bg-red-500 text-white shadow-lg shadow-red-200 scale-110' : 'bg-gray-100 hover:bg-blue-100 text-gray-600 hover:text-blue-600 disabled:opacity-40'}`}
+                className={`flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 font-medium z-10 relative
+                  ${listening ? 'bg-rose-500 text-white shadow-[0_0_20px_rgba(244,63,94,0.5)] scale-105' : 'bg-slate-100 hover:bg-slate-200 text-slate-600 disabled:opacity-40'}`}
                 title={listening ? '停止' : '語音輸入'}>
-                {listening ? <MicOff size={18} /> : <Mic size={18} />}
+                {listening ? (
+                  <>
+                    <div className="absolute inset-0 rounded-full animate-ping bg-rose-400 opacity-40"></div>
+                    <MicOff size={20} className="relative z-10" />
+                  </>
+                ) : <Mic size={20} />}
               </button>
             ) : (
-              <div className="flex-shrink-0 w-11 h-11 rounded-full flex items-center justify-center bg-gray-100 text-gray-300">
-                <MicOff size={18} />
+              <div className="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center bg-slate-100 text-slate-300">
+                <MicOff size={20} />
               </div>
             )}
+            
             <input
               type="text"
               value={input}
               onChange={e => setInput(e.target.value)}
               onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(input); }}}
               placeholder={sttSupported ? "說話或輸入照護動作..." : "輸入照護動作..."}
-              className="flex-1 border border-gray-200 rounded-full px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-400 disabled:opacity-50"
+              className="flex-1 border border-slate-200 bg-slate-50/50 rounded-2xl px-5 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-400 focus:bg-white disabled:opacity-50 transition-all font-medium placeholder:text-slate-400 shadow-inner shadow-slate-100/50"
               disabled={processing}
             />
+            
             <button onClick={() => sendMessage(input)} disabled={!input.trim() || processing}
-              className="flex-shrink-0 w-11 h-11 rounded-full bg-blue-600 flex items-center justify-center text-white hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
-              {processing ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
+              className="absolute right-1.5 flex-shrink-0 w-9 h-9 rounded-xl bg-slate-900 flex items-center justify-center text-white hover:bg-slate-800 disabled:opacity-0 transition-all duration-300 shadow-sm z-10">
+              {processing ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} className="ml-0.5" />}
             </button>
           </div>
         </div>
@@ -501,16 +513,16 @@ export default function AIAssistant({ patientId, patientName, open, onOpenChange
 function HowToUseBar() {
   const [open, setOpen] = useState(false);
   return (
-    <div className="border-b border-gray-100 shrink-0">
+    <div className="border-b border-slate-100 shrink-0 bg-white">
       <button onClick={() => setOpen(o => !o)}
-        className="w-full flex items-center justify-between px-4 py-2 text-xs text-gray-500 hover:bg-gray-50 transition-colors">
-        <span className="font-medium flex items-center gap-1.5">
-          <Settings size={12} /> 使用說明 &amp; 指令範例
+        className="w-full flex items-center justify-between px-5 py-2.5 text-xs text-slate-500 hover:bg-slate-50 transition-colors">
+        <span className="font-bold flex items-center gap-2 uppercase tracking-wider">
+          <Settings size={14} /> 使用說明 &amp; 指令範例
         </span>
-        <ChevronDown size={13} className={`transition-transform ${open ? 'rotate-180' : ''}`} />
+        <ChevronDown size={14} className={`transition-transform duration-300 ${open ? 'rotate-180' : ''}`} />
       </button>
       {open && (
-        <div className="px-4 pb-3 grid grid-cols-2 gap-2 text-xs text-gray-600 bg-gray-50">
+        <div className="px-5 pb-4 grid grid-cols-2 gap-3 text-xs text-slate-600 bg-slate-50/80 border-t border-slate-100/50 pt-3 shadow-inner shadow-slate-100/50">
           {[
             ['📊 生命徵象', '"血壓148/88，心跳78"'],
             ['💧 攝入量', '"喝了200cc的水"'],
@@ -519,9 +531,9 @@ function HowToUseBar() {
             ['📝 護理記錄', '"住民情緒穩定"'],
             ['🌡️ 體溫', '"體溫37.2度"'],
           ].map(([cat, ex]) => (
-            <div key={cat}>
-              <span className="font-medium">{cat}</span>
-              <div className="text-gray-400 mt-0.5">{ex}</div>
+            <div key={cat} className="bg-white p-2 rounded-lg border border-slate-100 shadow-sm">
+              <span className="font-bold text-slate-800">{cat}</span>
+              <div className="text-slate-400 mt-1 font-medium">{ex}</div>
             </div>
           ))}
         </div>
