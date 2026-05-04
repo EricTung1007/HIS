@@ -107,15 +107,15 @@ function buildFamilyPrompt(data) {
 今日照護服務：${servicesText}
 
 【寫作要求】
-1. 用第三人稱稱呼住民（如「阿嬤」或住民的名字），語氣溫暖親切
-2. 用家屬能理解的白話文（避免醫學術語，需解釋時加括號說明）
+1. 用第三人稱稱呼住民（如「阿嬤」或住民的名字），語氣溫暖親切。請以「我們」自稱照護團隊（切勿單獨使用「護理師」一詞）。
+2. 這是直接寫給家屬看的聯絡簿，用語需家屬能理解（避免醫學術語），且絕對避免使用「令家屬感到欣慰的是...」這類對家屬情緒預設立場的奇怪詞句。
 3. 包含以下段落：
    - 今日整體狀況（一段話概述）
    - 生命徵象（有資料才寫）
    - 飲食與水分（有資料才寫）
    - 用藥情況（有資料才寫）
    - 照護服務（有資料才寫）
-   - 護理師觀察（有護理記錄才寫）
+   - 照護觀察（有護理記錄才寫）
    - 溫馨提醒或建議（給家屬的一句話）
 4. 若某項無資料，該段落可省略
 5. 整體長度約 200-350 字
@@ -160,13 +160,25 @@ router.post('/', async (req, res) => {
     if (!data) return res.status(404).json({ error: '住民不存在' });
 
     try {
-      const completion = await client.chat.completions.create({
-        model: getModel(),
-        messages: [{ role: 'user', content: buildFamilyPrompt(data) }],
-        max_tokens: 1000,
-        temperature: 0.6,
-      });
-      summary = completion.choices[0].message.content || '';
+      const model = getModel();
+      if (model.toLowerCase().includes('qwen')) {
+        const rawPrompt = `<|im_start|>user\n${buildFamilyPrompt(data)}\n<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n`;
+        const completion = await client.completions.create({
+          model,
+          prompt: rawPrompt,
+          max_tokens: 1000,
+          temperature: 0.6,
+        });
+        summary = completion.choices[0].text || '';
+      } else {
+        const completion = await client.chat.completions.create({
+          model,
+          messages: [{ role: 'user', content: buildFamilyPrompt(data) }],
+          max_tokens: 1000,
+          temperature: 0.6,
+        });
+        summary = completion.choices[0].message.content || '';
+      }
     } catch (err) {
       return res.status(500).json({ error: `AI 生成失敗：${err.message}` });
     }
@@ -178,7 +190,13 @@ router.post('/', async (req, res) => {
   if (existing) {
     db.prepare(
       'UPDATE family_contact_logs SET ai_summary=?, extra_notes=?, staff_notes=?, updated_by=?, updated_at=CURRENT_TIMESTAMP WHERE id=?'
-    ).run(summary || existing.ai_summary, extra_notes ?? null, staff_notes ?? null, req.user?.id || null, existing.id);
+    ).run(
+      summary || existing.ai_summary, 
+      extra_notes !== undefined ? extra_notes : existing.extra_notes, 
+      staff_notes !== undefined ? staff_notes : existing.staff_notes, 
+      req.user?.id || null, 
+      existing.id
+    );
     id = existing.id;
   } else {
     const result = db.prepare(

@@ -1,6 +1,7 @@
 const express = require('express');
 const db = require('../db');
 const { authMiddleware } = require('../middleware/auth');
+const { autoBill } = require('../utils/auto-billing');
 
 const router = express.Router({ mergeParams: true });
 router.use(authMiddleware);
@@ -44,6 +45,14 @@ router.post('/', (req, res) => {
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).run(req.params.pid, record_date, record_time, type, category, amount, unit || 'mL', notes, req.user.id);
   res.json(db.prepare('SELECT * FROM intake_output WHERE id = ?').get(result.lastInsertRowid));
+
+  // Auto-billing hooks
+  const dateTimeStr = `${record_date}T${record_time}`;
+  if (type === 'intake') {
+    autoBill(req.params.pid, 'BA04', req.user.id, dateTimeStr, '系統自動核銷：協助進食或管灌餵食');
+  } else if (type === 'output') {
+    autoBill(req.params.pid, 'BA24', req.user.id, dateTimeStr, '系統自動核銷：協助排泄');
+  }
 });
 
 // PUT /api/patients/:pid/io/:rid

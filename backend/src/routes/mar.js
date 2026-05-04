@@ -1,6 +1,7 @@
 const express = require('express');
 const db = require('../db');
 const { authMiddleware } = require('../middleware/auth');
+const { autoBill } = require('../utils/auto-billing');
 
 const router = express.Router({ mergeParams: true });
 router.use(authMiddleware);
@@ -51,6 +52,12 @@ router.post('/', (req, res) => {
     WHERE ma.id = ?
   `).get(result.lastInsertRowid);
   res.json(record);
+
+  // Auto-billing hooks
+  const currentStatus = status || 'given';
+  if (currentStatus === 'given') {
+    autoBill(req.params.pid, 'BA02', req.user.id, adminTime, '系統自動核銷：協助用藥/服藥');
+  }
 });
 
 // PUT /api/patients/:pid/mar/:rid

@@ -224,7 +224,7 @@ export default function FamilyLogTab({ patientId }: { patientId: string }) {
                       </button>
                     </div>
                     <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed">
-                      {log.ai_summary}
+                      {log.ai_summary || log.extra_notes || log.staff_notes || <span className="text-gray-300 italic">尚未填寫內容...</span>}
                     </p>
                     <div className="mt-2 flex items-center justify-between">
                       <span className="text-[10px] text-gray-400 font-medium">記錄者：{log.creator_name}</span>

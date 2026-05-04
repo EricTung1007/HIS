@@ -93,6 +93,18 @@ async function executeAction(patientId: string, response: AIResponse) {
       });
       break;
     }
+    case 'add_allergy': {
+      await api.post(`/patients/${patientId}/allergies`, data);
+      break;
+    }
+    case 'add_diagnosis': {
+      await api.post(`/patients/${patientId}/diagnoses`, { diagnosis_date: today, ...data });
+      break;
+    }
+    case 'physical_exam': {
+      await api.post(`/patients/${patientId}/pe`, { exam_date: today, ...data });
+      break;
+    }
     case 'query':
     case 'unknown':
       break;
@@ -105,7 +117,8 @@ const ACTION_LABELS: Record<string, string> = {
   vital_signs: '📊 生命徵象', intake: '💧 攝入量', output: '🚿 排出量',
   mar: '💊 給藥記錄', medication_order: '💊+ 新增藥物醫囑', nursing_note: '📝 護理記錄',
   update_patient: '✏️ 更新住民資料', family_log: '📖 聯絡簿補充',
-  billing: '💰 核銷碼', query: '🔍 查詢', unknown: '❓ 無法辨識',
+  billing: '💰 核銷碼', add_allergy: '⚠️ 新增過敏', add_diagnosis: '🩺 新增診斷',
+  physical_exam: '🏥 身體評估', query: '🔍 查詢', unknown: '❓ 無法辨識',
 };
 const ACTION_COLORS: Record<string, string> = {
   vital_signs: 'bg-red-50 border-red-200 text-red-700',
@@ -117,6 +130,9 @@ const ACTION_COLORS: Record<string, string> = {
   update_patient: 'bg-amber-50 border-amber-200 text-amber-700',
   family_log: 'bg-indigo-50 border-indigo-200 text-indigo-700',
   billing: 'bg-emerald-50 border-emerald-200 text-emerald-700',
+  add_allergy: 'bg-rose-50 border-rose-200 text-rose-700',
+  add_diagnosis: 'bg-cyan-50 border-cyan-200 text-cyan-700',
+  physical_exam: 'bg-fuchsia-50 border-fuchsia-200 text-fuchsia-700',
   query: 'bg-gray-50 border-gray-200 text-gray-700',
   unknown: 'bg-gray-50 border-gray-200 text-gray-400',
 };
@@ -129,6 +145,7 @@ const EXAMPLES = [
   { label: '尿了300cc', text: '尿了300cc' },
   { label: '已給藥', text: '已給早上的藥' },
   { label: '護理記錄', text: '住民情緒穩定，無不適主訴' },
+  { label: '⚠️過敏', text: '新增過敏：青黴素，會起紅疹' },
   { label: '💰洗澡洗頭', text: '幫住民洗澡洗頭' },
   { label: '💰翻身拍背', text: '翻身拍背' },
   { label: '💰協助進食', text: '協助進食' },

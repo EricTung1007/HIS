@@ -1,6 +1,7 @@
 const express = require('express');
 const db = require('../db');
 const { authMiddleware } = require('../middleware/auth');
+const { autoBill } = require('../utils/auto-billing');
 
 const router = express.Router({ mergeParams: true });
 router.use(authMiddleware);
@@ -29,6 +30,12 @@ router.post('/', (req, res) => {
   `).run(req.params.pid, time, systolic_bp, diastolic_bp, heart_rate,
     respiratory_rate, temperature, spo2, weight, height, pain_score, blood_glucose, notes, req.user.id);
   res.json(db.prepare('SELECT * FROM vital_signs WHERE id = ?').get(result.lastInsertRowid));
+
+  // Auto-billing hooks
+  autoBill(req.params.pid, 'BA03', req.user.id, time, '系統自動核銷：測量生命徵象');
+  if (blood_glucose) {
+    autoBill(req.params.pid, 'BA17', req.user.id, time, '系統自動核銷：攜帶式血糖機驗血糖');
+  }
 });
 
 // PUT /api/patients/:pid/vitals/:vid

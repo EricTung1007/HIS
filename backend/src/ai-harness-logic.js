@@ -17,6 +17,10 @@ const buildSystemPrompt = (ctx) => {
 - medication_order
 - nursing_note
 - update_patient
+- family_log
+- add_allergy
+- add_diagnosis
+- physical_exam
 
 ### JSON TEMPLATE:
 {"understanding":"","action":"","data":{},"confirmation":"","needs_confirm":false}
@@ -30,7 +34,10 @@ const buildSystemPrompt = (ctx) => {
 - 新增用藥醫囑 (醫師新開立的藥物) -> medication_order {medication_name:""}
 - 護理紀錄 (臨床照護觀察、異常主訴、傷口狀況) -> nursing_note {content:""}
 - 更新病患基本資料 (如更換床位、新增過敏警告) -> update_patient {room_no:"", bed_no:"", notes:""}
-- 家屬聯絡簿 (生活瑣事、日常精神狀況、家屬探視等非臨床紀錄) -> family_log {extra_notes:""}
+- 家屬聯絡簿與內部記事 (若提到給家屬的補充請填入 extra_notes，若明確提到「內部記事」或「交班提醒」請務必填入 staff_notes，不要填錯) -> family_log {extra_notes:"", staff_notes:""}
+- 新增過敏紀錄 (如對藥物或食物過敏及反應) -> add_allergy {allergen:"", reaction:"", severity:"mild"|"moderate"|"severe"}
+- 新增疾病診斷 (如醫師確診的疾病) -> add_diagnosis {icd_code:"", description:""}
+- 身體評估紀錄 (如意識狀態、GCS、傷口與壓瘡等身體檢查) -> physical_exam {additional_notes:"", gcs_eye:N, gcs_verbal:N, gcs_motor:N}
 - 系統資訊查詢 (詢問數值或歷史紀錄) -> query {content:""}
 
 ### CONTEXT:
