@@ -1,7 +1,7 @@
 # AI Evaluation Report
 **Model:** `qwen3.5-9b`
 **Base URL:** `http://127.0.0.1:1234/v1`
-**Timestamp:** `5/4/2026, 11:58:04 AM`
+**Timestamp:** `5/4/2026, 12:01:04 PM`
 **Final Score:** 49/50
 
 | # | Question | Expected Action | Actual Action | Output Data | Result |
@@ -49,8 +49,8 @@
 | 41 | 心情穩定，沒有不舒服 | nursing_note | nursing_note | `{"content":"心情穩定，沒有不舒服"}` | ✅ PASS |
 | 42 | 換到202房 | update_patient | update_patient | `{"room_no":"202","bed_no":"","notes":""}` | ✅ PASS |
 | 43 | 阿公今天很有精神 | family_log | family_log | `{"extra_notes":"阿公今天很有精神"}` | ✅ PASS |
-| 44 | 住民反應頭暈 | nursing_note | nursing_note | `{"content":"住民反應頭暈"}` | ✅ PASS |
-| 45 | 編輯警告：對海鮮過敏 | update_patient | update_patient | `{"room_no":"","bed_no":"","notes":"對海鮮過敏"}` | ✅ PASS |
+| 44 | 住民反應頭暈 | nursing_note | nursing_note | `{"content":"住民主訴頭暈"}` | ✅ PASS |
+| 45 | 編輯警告：對海鮮過敏 | update_patient | update_patient | `{"room_no":"","bed_no":"101-A","notes":"對海鮮過敏"}` | ✅ PASS |
 | 46 | 聯絡簿備註：家屬周五來訪 | family_log | family_log | `{"extra_notes":"家屬周五來訪"}` | ✅ PASS |
 | 47 | 傷口紅腫，已通知家屬 | nursing_note | nursing_note | `{"content":"傷口紅腫，已通知家屬"}` | ✅ PASS |
 | 48 | 改床位到 B 床 | update_patient | update_patient | `{"room_no":"","bed_no":"B","notes":""}` | ✅ PASS |
