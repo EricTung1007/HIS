@@ -1,8 +1,8 @@
 # AI Evaluation Report
 **Model:** `qwen3.5-9b`
 **Base URL:** `http://127.0.0.1:1234/v1`
-**Timestamp:** `5/4/2026, 12:01:04 PM`
-**Final Score:** 49/50
+**Timestamp:** `5/4/2026, 12:04:09 PM`
+**Final Score:** 47/50
 
 | # | Question | Expected Action | Actual Action | Output Data | Result |
 |---|---|---|---|---|---|
@@ -34,25 +34,25 @@
 | 26 | 幫住民洗澡 | billing | billing | `{"code":"BA07","name":"協助沐浴"}` | ✅ PASS |
 | 27 | 翻身拍背 | billing | billing | `{"code":"BA10","name":"翻身拍背"}` | ✅ PASS |
 | 28 | 協助進食 | billing | billing | `{"code":"BA04","name":"協助進食"}` | ✅ PASS |
-| 29 | 修剪指甲 | billing | billing | `{"code":"BA07","name":"協助沐浴"}` | ✅ PASS |
+| 29 | 修剪指甲 | billing | billing | `{"code":"BA10","name":"修剪指甲"}` | ✅ PASS |
 | 30 | 更換尿片 | billing | billing | `{"code":"BA07","name":"協助沐浴"}` | ❌ FAIL |
-| 31 | 傷口換藥 | billing | billing | `{"code":"BA07","name":"協助沐浴"}` | ✅ PASS |
+| 31 | 傷口換藥 | billing | nursing_note | `{"content":"傷口換藥"}` | ❌ FAIL |
 | 32 | 肢體關節活動 | billing | billing | `{"code":"BA11","name":"肢體關節活動"}` | ✅ PASS |
-| 33 | 陪同外出 | billing | billing | `{"code":"BA07","name":"協助沐浴"}` | ✅ PASS |
+| 33 | 陪同外出 | billing | family_log | `{"extra_notes":"陪同外出"}` | ❌ FAIL |
 | 34 | 協助沐浴洗頭 | billing | billing | `{"code":"BA07","name":"協助沐浴"}` | ✅ PASS |
-| 35 | 口腔清潔 | billing | billing | `{"code":"BA07","name":"協助沐浴"}` | ✅ PASS |
+| 35 | 口腔清潔 | billing | billing | `{"code":"BA10","name":"翻身拍背"}` | ✅ PASS |
 | 36 | 已給Metformin | mar | mar | `{"medication_name":"Metformin","status":"given"}` | ✅ PASS |
-| 37 | 拒絕吃藥 | mar | mar | `{"medication_name":"","status":"refused"}` | ✅ PASS |
-| 38 | 脈優已服用 | mar | mar | `{"medication_name":"Norvasc","status":"given"}` | ✅ PASS |
+| 37 | 拒絕吃藥 | mar | mar | `{"status":"refused"}` | ✅ PASS |
+| 38 | 脈優已服用 | mar | mar | `{"status":"given"}` | ✅ PASS |
 | 39 | 加開 Aspirin 100mg 每天一次 | medication_order | medication_order | `{"medication_name":"Aspirin 100mg"}` | ✅ PASS |
 | 40 | 醫師開了乙醯胺酚 500mg TID | medication_order | medication_order | `{"medication_name":"乙醯胺酚 500mg TID"}` | ✅ PASS |
 | 41 | 心情穩定，沒有不舒服 | nursing_note | nursing_note | `{"content":"心情穩定，沒有不舒服"}` | ✅ PASS |
-| 42 | 換到202房 | update_patient | update_patient | `{"room_no":"202","bed_no":"","notes":""}` | ✅ PASS |
+| 42 | 換到202房 | update_patient | update_patient | `{"room_no":"202"}` | ✅ PASS |
 | 43 | 阿公今天很有精神 | family_log | family_log | `{"extra_notes":"阿公今天很有精神"}` | ✅ PASS |
 | 44 | 住民反應頭暈 | nursing_note | nursing_note | `{"content":"住民主訴頭暈"}` | ✅ PASS |
-| 45 | 編輯警告：對海鮮過敏 | update_patient | update_patient | `{"room_no":"","bed_no":"101-A","notes":"對海鮮過敏"}` | ✅ PASS |
+| 45 | 編輯警告：對海鮮過敏 | update_patient | update_patient | `{"notes":"對海鮮過敏"}` | ✅ PASS |
 | 46 | 聯絡簿備註：家屬周五來訪 | family_log | family_log | `{"extra_notes":"家屬周五來訪"}` | ✅ PASS |
 | 47 | 傷口紅腫，已通知家屬 | nursing_note | nursing_note | `{"content":"傷口紅腫，已通知家屬"}` | ✅ PASS |
 | 48 | 改床位到 B 床 | update_patient | update_patient | `{"room_no":"","bed_no":"B","notes":""}` | ✅ PASS |
 | 49 | 詢問目前體溫多少 | query | query | `{"content":"請問目前體溫是多少？"}` | ✅ PASS |
-| 50 | 今天有沒有大便 | query | query | `{"content":"今天有沒有大便"}` | ✅ PASS |
+| 50 | 今天有沒有大便 | query | query | `{"content":"今日是否有排便紀錄"}` | ✅ PASS |
