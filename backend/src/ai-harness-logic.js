@@ -21,16 +21,29 @@ const buildSystemPrompt = (ctx) => {
 ### JSON TEMPLATE:
 {"understanding":"","action":"","data":{},"confirmation":"","needs_confirm":false}
 
-### MAPPING (Key -> Action {fields}):
-- "水/飲料/牛奶/管灌" -> intake {category:"口服"|"管灌", amount:N}
-- "尿液/糞便/引流" -> output {category:"尿液"|"糞便"|"引流", amount:N}
-- "血壓/體溫/心跳/血氧/血糖/疼痛" -> vital_signs {systolic_bp:N, diastolic_bp:N, heart_rate:N, temperature:N, spo2:N, blood_glucose:N, pain_score:N, weight:N}
-- "洗澡/翻身/拍背/協助" -> billing {code:"BAxx", name:""}
+### MAPPING (Semantic Action Description -> Action {fields}):
+- 攝入紀錄 (如飲水、進食、管灌、靜脈注射等) -> intake {category:"口服"|"管灌"|"點滴", amount:N}
+- 排出紀錄 (如尿液、糞便、嘔吐、引流等) -> output {category:"尿液"|"糞便"|"引流"|"嘔吐", amount:N}
+- 生命徵象測量 (包含血壓、體溫、心跳、血氧、血糖、體重、疼痛與呼吸) -> vital_signs {systolic_bp:N, diastolic_bp:N, heart_rate:N, temperature:N, spo2:N, blood_glucose:N, pain_score:N, weight:N, respiratory_rate:N}
+- 長照服務紀錄 (協助沐浴、翻身拍背、修剪指甲等日常照顧) -> billing {code:"BAxx", name:""} (IMPORTANT: You MUST select the most semantically appropriate code and name from the 核銷代碼 context list)
+- 藥物給予與服藥狀態紀錄 -> mar {status:"given"|"refused"|"held"}
+- 新增用藥醫囑 (醫師新開立的藥物) -> medication_order {medication_name:""}
+- 護理紀錄 (臨床照護觀察、異常主訴、傷口狀況) -> nursing_note {content:""}
+- 更新病患基本資料 (如更換床位、新增過敏警告) -> update_patient {room_no:"", bed_no:"", notes:""}
+- 家屬聯絡簿 (生活瑣事、日常精神狀況、家屬探視等非臨床紀錄) -> family_log {extra_notes:""}
+- 系統資訊查詢 (詢問數值或歷史紀錄) -> query {content:""}
 
 ### CONTEXT:
 住民:${patient.name}, 床號:${patient.room_no}-${patient.bed_no}
 用藥醫囑:${medList}
 核銷代碼:${billingList}
+
+### EXAMPLES:
+User: "喝水200cc"
+Assistant: {"understanding":"住民喝水200cc","action":"intake","data":{"category":"口服","amount":200},"confirmation":"已記錄口服200cc","needs_confirm":false}
+
+User: "血壓130/85"
+Assistant: {"understanding":"量測血壓","action":"vital_signs","data":{"systolic_bp":130,"diastolic_bp":85},"confirmation":"已記錄血壓130/85","needs_confirm":false}
 
 ### RULES:
 1. ONLY JSON.
@@ -38,7 +51,8 @@ const buildSystemPrompt = (ctx) => {
 3. Strings in "".
 4. All messages (understanding, confirmation) MUST be in Traditional Chinese (zh-TW).
 5. "understanding" is a short summary of what the user said.
-6. "confirmation" is a polite response in Traditional Chinese to confirm the action taken.`;
+6. "confirmation" is a polite response in Traditional Chinese to confirm the action taken.
+7. You MUST output ONLY valid JSON format. Do not use Markdown backticks. Do not include <think> tags or reasoning.`;
 };
 
 const repairJson = (raw) => {

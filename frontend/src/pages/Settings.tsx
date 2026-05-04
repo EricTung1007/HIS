@@ -4,9 +4,9 @@ import api from '../api/client';
 
 const PRESETS = [
   { label: 'OpenAI (預設)', baseURL: '', model: 'gpt-4o' },
-  { label: 'OpenAI GPT-4o-mini（省錢）', baseURL: '', model: 'gpt-4o-mini' },
+  { label: 'OpenAI GPT-4o-mini', baseURL: '', model: 'gpt-4o-mini' },
+  { label: 'LM Studio Qwen 3.5 9B', baseURL: 'http://169.254.226.70:1234/v1', model: 'qwen3.5-9b' },
   { label: 'Ollama 本地', baseURL: 'http://localhost:11434/v1', model: 'llama3' },
-  { label: 'LM Studio 本地', baseURL: 'http://localhost:1234/v1', model: 'local-model' },
 ];
 
 export default function Settings() {

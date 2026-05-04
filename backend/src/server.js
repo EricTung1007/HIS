@@ -21,6 +21,7 @@ app.use('/api/ai', require('./routes/ai'));
 app.use('/api/billing', require('./routes/billing'));
 app.use('/api/patients/:pid/billing', require('./routes/billing'));
 app.use('/api/patients/:pid/family-logs', require('./routes/family-logs'));
+app.use('/api/activity', require('./routes/activity'));
 
 app.get('/api/health', (req, res) => res.json({ status: 'ok', system: '台灣長照HIS系統' }));
 
