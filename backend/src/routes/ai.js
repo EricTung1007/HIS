@@ -108,35 +108,53 @@ router.post('/chat', async (req, res) => {
     };
 
     let completion;
-    const tryRequest = async (params) => {
+    let rawText = '{}';
+    
+    if (model.toLowerCase().includes('qwen')) {
+      const rawPrompt = `<|im_start|>system\n${buildSystemPrompt(ctx)}\n<|im_end|>\n<|im_start|>user\n使用者問題：\n${message}\n<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n`;
+      
       try {
-        return await client.chat.completions.create(params);
+        completion = await client.completions.create({
+          model,
+          prompt: rawPrompt,
+          max_tokens: 1024,
+          temperature: 0.01,
+        });
+        rawText = completion.choices[0].text || '{}';
       } catch (e) {
-        if (e.status === 400) {
-          const msg = e.message.toLowerCase();
-          if (params.max_completion_tokens && (msg.includes('max_completion_tokens') || msg.includes('unknown parameter'))) {
-            const nextParams = { ...params };
-            delete nextParams.max_completion_tokens;
-            nextParams.max_tokens = 1024;
-            return tryRequest(nextParams);
-          }
-          if (params.response_format?.type === 'json_object' && (msg.includes('response_format') || msg.includes('json_object'))) {
-            const nextParams = { ...params };
-            delete nextParams.response_format;
-            return tryRequest(nextParams);
-          }
-        }
         throw e;
       }
-    };
+    } else {
+      const tryRequest = async (params) => {
+        try {
+          return await client.chat.completions.create(params);
+        } catch (e) {
+          if (e.status === 400) {
+            const msg = e.message.toLowerCase();
+            if (params.max_completion_tokens && (msg.includes('max_completion_tokens') || msg.includes('unknown parameter'))) {
+              const nextParams = { ...params };
+              delete nextParams.max_completion_tokens;
+              nextParams.max_tokens = 1024;
+              return tryRequest(nextParams);
+            }
+            if (params.response_format?.type === 'json_object' && (msg.includes('response_format') || msg.includes('json_object'))) {
+              const nextParams = { ...params };
+              delete nextParams.response_format;
+              return tryRequest(nextParams);
+            }
+          }
+          throw e;
+        }
+      };
 
-    completion = await tryRequest({
-      ...baseParams,
-      response_format: isReasoningModel ? undefined : { type: 'json_object' },
-      max_completion_tokens: 1024,
-    });
+      completion = await tryRequest({
+        ...baseParams,
+        response_format: isReasoningModel ? undefined : { type: 'json_object' },
+        max_completion_tokens: 1024,
+      });
+      rawText = completion.choices[0].message.content || '{}';
+    }
 
-    const rawText = completion.choices[0].message.content || '{}';
     let parsed;
     try {
       parsed = repairJson(rawText);

@@ -2,7 +2,7 @@ export interface User {
   id: number;
   username: string;
   name: string;
-  role: 'admin' | 'nurse' | 'doctor' | 'caregiver';
+  role: 'admin' | 'nurse' | 'doctor' | 'caregiver' | 'caretaker';
   department?: string;
 }
 

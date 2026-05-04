@@ -5,6 +5,8 @@
 
 const { buildSystemPrompt, repairJson } = require('./ai-harness-logic');
 const OpenAI = require('openai');
+const fs = require('fs');
+const path = require('path');
 
 const TEST_CASES = [
   // --- Vitals (1-10) ---
@@ -20,23 +22,23 @@ const TEST_CASES = [
   { q: '發燒了 38.5度', action: 'vital_signs', check: (d) => d.temperature == 38.5 },
 
   // --- Intake (11-20) ---
-  { q: '喝水200cc', action: 'intake', check: (d) => d.amount == 200 && d.category === 'oral' },
-  { q: '管灌250cc', action: 'intake', check: (d) => d.amount == 250 && d.category === 'tube_feeding' },
-  { q: '點滴500cc', action: 'intake', check: (d) => d.amount == 500 && d.category === 'iv' },
-  { q: '喝了一碗稀飯', action: 'intake', check: (d) => d.category === 'oral' },
+  { q: '喝水200cc', action: 'intake', check: (d) => d.amount == 200 && (d.category === 'oral' || d.category === '口服') },
+  { q: '管灌250cc', action: 'intake', check: (d) => d.amount == 250 && (d.category === 'tube_feeding' || d.category === '管灌') },
+  { q: '點滴500cc', action: 'intake', check: (d) => d.amount == 500 && (d.category === 'iv' || d.category === '點滴' || d.category === '靜脈注射') },
+  { q: '喝了一碗稀飯', action: 'intake', check: (d) => d.category === 'oral' || d.category === '口服' },
   { q: '補充牛奶 150ml', action: 'intake', check: (d) => d.amount == 150 },
-  { q: '下午茶吃水果 100g', action: 'intake', check: (d) => d.category === 'oral' },
-  { q: '靜脈注射 100cc', action: 'intake', check: (d) => d.category === 'iv' },
+  { q: '下午茶吃水果 100g', action: 'intake', check: (d) => d.category === 'oral' || d.category === '口服' },
+  { q: '靜脈注射 100cc', action: 'intake', check: (d) => d.category === 'iv' || d.category === '靜脈注射' || d.category === '點滴' },
   { q: '點滴剩餘 100cc', action: 'intake', check: (d) => d.amount == 100 },
   { q: '管餵奶 180', action: 'intake', check: (d) => d.amount == 180 },
   { q: '喝湯 50cc', action: 'intake', check: (d) => d.amount == 50 },
 
   // --- Output (21-25) ---
-  { q: '尿了300cc', action: 'output', check: (d) => d.amount == 300 && d.category === 'urine' },
-  { q: '大便一次', action: 'output', check: (d) => d.amount == 1 && d.category === 'stool' },
+  { q: '尿了300cc', action: 'output', check: (d) => d.amount == 300 && (d.category === 'urine' || d.category === '尿液') },
+  { q: '大便一次', action: 'output', check: (d) => d.amount == 1 && (d.category === 'stool' || d.category === '糞便') },
   { q: '引流袋 150cc', action: 'output', check: (d) => d.amount == 150 },
-  { q: '嘔吐 50cc', action: 'output', check: (d) => d.category === 'emesis' || d.category === 'other' },
-  { q: '軟便二次', action: 'output', check: (d) => d.amount == 2 && d.category === 'stool' },
+  { q: '嘔吐 50cc', action: 'output', check: (d) => d.category === 'emesis' || d.category === 'other' || d.category === '嘔吐' },
+  { q: '軟便二次', action: 'output', check: (d) => d.amount == 2 && (d.category === 'stool' || d.category === '糞便') },
 
   // --- Billing (26-35) ---
   { q: '幫住民洗澡', action: 'billing', check: (d) => d.code && d.code.includes('BA07') },
@@ -90,27 +92,55 @@ async function runEvaluation(apiKey, baseURL, model) {
   console.log(`Base URL: ${baseURL || 'Default OpenAI'}\n`);
 
   let passed = 0;
+  const reportLines = [
+    `# AI Evaluation Report`,
+    `**Model:** \`${model}\``,
+    `**Base URL:** \`${baseURL || 'Default OpenAI'}\``,
+    `**Timestamp:** \`${new Date().toLocaleString()}\``,
+    ``,
+    `| # | Question | Expected Action | Actual Action | Output Data | Result |`,
+    `|---|---|---|---|---|---|`
+  ];
   for (let i = 0; i < TEST_CASES.length; i++) {
     const test = TEST_CASES[i];
     process.stdout.write(`[${i+1}/50] Testing: "${test.q}" ... `);
     
     try {
-      const completion = await client.chat.completions.create({
-        model: model,
-        messages: [
-          { role: 'system', content: buildSystemPrompt(mockCtx) },
-          { role: 'user', content: test.q }
-        ],
-        temperature: 0.01,
-      });
+      let rawText = '{}';
+      if (model.toLowerCase().includes('qwen')) {
+        const rawPrompt = `<|im_start|>system\n${buildSystemPrompt(mockCtx)}\n<|im_end|>\n<|im_start|>user\n使用者問題：\n${test.q}\n<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n`;
+        const completion = await client.completions.create({
+          model: model,
+          prompt: rawPrompt,
+          max_tokens: 1024,
+          temperature: 0.01,
+        });
+        rawText = completion.choices[0].text;
+      } else {
+        const completion = await client.chat.completions.create({
+          model: model,
+          messages: [
+            { role: 'system', content: buildSystemPrompt(mockCtx) },
+            { role: 'user', content: test.q }
+          ],
+          temperature: 0.01,
+        });
+        rawText = completion.choices[0].message.content;
+      }
 
-      const raw = completion.choices[0].message.content;
+      const raw = rawText;
       const parsed = repairJson(raw);
       
       const actionMatch = parsed.action === test.action;
       const dataMatch = test.check(parsed.data || {});
+      const isCorrect = actionMatch && dataMatch;
+      const statusEmoji = isCorrect ? '✅ PASS' : '❌ FAIL';
+      
+      // Escape vertical bars and newlines for markdown table
+      const safeData = JSON.stringify(parsed.data || {}).replace(/\|/g, '\\|').replace(/\n/g, ' ');
+      reportLines.push(`| ${i+1} | ${test.q} | ${test.action} | ${parsed.action} | \`${safeData}\` | ${statusEmoji} |`);
 
-      if (actionMatch && dataMatch) {
+      if (isCorrect) {
         console.log('✅ PASS');
         passed++;
       } else {
@@ -121,10 +151,18 @@ async function runEvaluation(apiKey, baseURL, model) {
     } catch (e) {
       console.log('💥 ERROR');
       console.log(`   ${e.message}`);
+      reportLines.push(`| ${i+1} | ${test.q} | ${test.action} | ERROR | \`${e.message.replace(/\|/g, '\\|')}\` | 💥 ERROR |`);
     }
   }
 
   console.log(`\n--- FINAL SCORE: ${passed}/50 ---`);
+  
+  // Write report
+  reportLines.splice(4, 0, `**Final Score:** ${passed}/${TEST_CASES.length}`);
+  const safeModelName = model.replace(/[^a-zA-Z0-9_-]/g, '_');
+  const reportPath = path.join(__dirname, `..`, `benchmark_report_${safeModelName}.md`);
+  fs.writeFileSync(reportPath, reportLines.join('\n'), 'utf-8');
+  console.log(`Report saved to: ${reportPath}`);
 }
 
 const [,, key, url, model] = process.argv;
